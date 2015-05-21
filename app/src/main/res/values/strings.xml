@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">PathFinder</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="action_settings"></string>
+
+    <string-array name="regions">
+        <item>CENTRAL</item>
+        <item>EAST</item>
+        <item>NORTH</item>
+        <item>NORTHEAST</item>
+        <item>WEST</item>
+    </string-array>
+
+    <string name="parse_app_id">YOUR_APPLICATION_ID</string>
+    <string name="parse_client_key">YOUR_CLIENT_KEY</string>
+
+    <string name="str_rb_driving">Driving</string>
+    <string name="str_rb_bicycling">BiCycling</string>
+    <string name="str_rb_walking">Walking</string>
+    <string name="str_rb_transit">Public Transit</string>
+    <string name="title_activity_find_clinic_current">FindClinicCurrent</string>
+
+    <string name="hello_world">Hello world!</string>
+</resources>

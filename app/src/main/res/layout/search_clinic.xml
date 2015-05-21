@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#ffc3a9ff" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:padding="10dip"
+        android:gravity="center_vertical|center_horizontal">
+
+        <!-- View Title Label -->
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dip"
+            android:text="SEARCH CLINIC BY :"
+            android:textSize="25sp"
+            android:textStyle="bold"
+            android:id="@+id/search" />
+
+        <RadioGroup
+            android:id="@+id/grp_region"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical|center_horizontal">
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Current Location"
+                android:id="@+id/current_loc"
+                android:checked="true"
+                android:layout_gravity="left" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Specific Location"
+                android:id="@+id/specific_loc"
+                android:checked="false"
+                android:layout_gravity="left" />
+
+            <AutoCompleteTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/address"
+                android:visibility="gone" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Estate Name"
+                android:id="@+id/estate_name"
+                android:checked="false"
+                android:layout_gravity="left" />
+
+        </RadioGroup>
+
+        <AutoCompleteTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/estateText"
+            android:layout_gravity="center_horizontal"
+            android:width="200dp"
+            android:visibility="gone"
+            android:singleLine="true"
+            android:inputType="text" />
+
+        <Button
+            android:id="@+id/find"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dip"
+            android:text="Find CLinic"
+            android:width="200dp"
+            android:layout_gravity="center_horizontal"
+            android:textColor="#ffff4446" />
+
+        <!-- Link to Login Screen -->
+
+    </LinearLayout>
+
+</ScrollView>
