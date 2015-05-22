@@ -1,4 +1,4 @@
-package com.example.a0134598r.pathfinder;
+package com.example.a0134598r.pathfinder.activities;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -7,14 +7,12 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.a0134598r.pathfinder.models.Place;
+import com.example.a0134598r.pathfinder.R;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -36,7 +34,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapsDirection3 extends ActionBarActivity {
+public class FindClinicEstateName extends ActionBarActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
@@ -201,7 +199,7 @@ public class MapsDirection3 extends ActionBarActivity {
 
 
 
-        new GetPlaces(MapsDirection3.this,
+        new GetPlaces(FindClinicEstateName.this,
                 type.toLowerCase().replace(
                         "-", "_").replace(" ", "_")).execute();
 

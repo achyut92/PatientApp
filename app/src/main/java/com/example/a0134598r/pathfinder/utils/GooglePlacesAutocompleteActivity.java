@@ -1,4 +1,4 @@
-package com.example.a0134598r.pathfinder;
+package com.example.a0134598r.pathfinder.utils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,6 +24,8 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.Toast;
+
+import com.example.a0134598r.pathfinder.R;
 
 //import com.javacodegeeks.androidgoogleplacesautocomplete.R;
 

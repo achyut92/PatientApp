@@ -36,7 +36,7 @@
             android:value="@string/parse_client_key" />
 
         <activity
-            android:name=".SearchScreen"
+            android:name=".activities.SearchScreen"
             android:label="@string/title_activity_maps" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,14 +44,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MapsActivity" />
-        <activity android:name=".MainActivity" />
-        <activity android:name=".MapsDirection3" />
+        <activity android:name=".utils.MapsActivity" />
+        <activity android:name=".activities.MainActivity" />
+        <activity android:name=".activities.FindClinicEstateName" />
         <activity
-            android:name=".FindClinicCurrent"
+            android:name=".activities.FindClinicCurrent"
             android:label="@string/title_activity_find_clinic_current" >
         </activity>
-        <activity android:name=".GooglePlacesAutocompleteActivity"/>
+        <activity android:name=".utils.GooglePlacesAutocompleteActivity"/>
     </application>
 
 </manifest>

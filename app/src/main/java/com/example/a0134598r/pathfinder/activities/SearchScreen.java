@@ -1,4 +1,4 @@
-package com.example.a0134598r.pathfinder;
+package com.example.a0134598r.pathfinder.activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -7,29 +7,24 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.ScrollView;
-import android.widget.Spinner;
-import android.widget.Toast;
 
+import com.example.a0134598r.pathfinder.R;
+import com.example.a0134598r.pathfinder.activities.FindClinicCurrent;
+import com.example.a0134598r.pathfinder.activities.FindClinicEstateName;
+import com.example.a0134598r.pathfinder.utils.GooglePlacesAutocompleteActivity;
 import com.parse.FindCallback;
-import com.parse.GetCallback;
 import com.parse.Parse;
 import com.parse.ParseACL;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -110,7 +105,7 @@ public class SearchScreen extends Activity {
                     Intent i = new Intent(getApplicationContext(),GooglePlacesAutocompleteActivity.class);
                     startActivity(i);
                 }if(selectedId==estate_name.getId()){
-                    Intent i = new Intent(getApplicationContext(),MapsDirection3.class);
+                    Intent i = new Intent(getApplicationContext(),FindClinicEstateName.class);
                     i.putExtra("estate_name",estateText.getText().toString());
                     startActivity(i);
 
