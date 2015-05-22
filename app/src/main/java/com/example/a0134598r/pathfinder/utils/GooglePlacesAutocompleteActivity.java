@@ -7,35 +7,54 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.Toast;
 
 import com.example.a0134598r.pathfinder.R;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 //import com.javacodegeeks.androidgoogleplacesautocomplete.R;
 
-public class GooglePlacesAutocompleteActivity extends Activity implements OnItemClickListener {
+public class GooglePlacesAutocompleteActivity extends ActionBarActivity implements OnItemClickListener {
 
     private static final String LOG_TAG = "ExampleApp";
 
     private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
     private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
     private static final String OUT_JSON = "/json";
+    GoogleMap mMap;
+    MarkerOptions mOption;
+
+    AutoCompleteTextView address;
+    Button findLoc;
+
 
     //------------ make your specific key ------------
     private static final String API_KEY = "AIzaSyAXNTxodHtPuBG0N54tgdZYRfNY2FRDej8";
@@ -48,6 +67,66 @@ public class GooglePlacesAutocompleteActivity extends Activity implements OnItem
 
         autoCompView.setAdapter(new GooglePlacesAutocompleteAdapter(this, R.layout.list_item));
         autoCompView.setOnItemClickListener(this);
+
+        address = (AutoCompleteTextView)findViewById(R.id.address);
+        findLoc = (Button)findViewById(R.id.findLoc);
+
+
+
+        setupMapIfNeeded();
+    }
+
+    public void setupMapIfNeeded(){
+        if(mMap == null){
+            mMap =((SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+            mOption =new  MarkerOptions();
+        }
+        if(mMap!=null){
+            setupMap();
+        }
+    }
+
+    public void setupMap(){
+
+        findLoc.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
+                if(mOption.isVisible()){
+                    mMap.clear();
+                }
+                getCoordinates();
+            }
+        });
+    }
+
+    public void getCoordinates(){
+        String autoCompText = address.getText().toString();
+        Geocoder geoCoder = new Geocoder(GooglePlacesAutocompleteActivity.this);
+        double latitude=0.00,longtitude=0.00;
+        LatLng pos;
+
+        try {
+            List<Address> addresses =
+                    geoCoder.getFromLocationName(autoCompText, 1);
+            if (addresses.size() >  0) {
+                latitude = addresses.get(0).getLatitude();
+                longtitude = addresses.get(0).getLongitude();
+            }
+
+        } catch (IOException e) { // TODO Auto-generated catch block
+            e.printStackTrace(); }
+
+
+        pos = new LatLng(latitude, longtitude);
+        mMap.addMarker(new MarkerOptions().icon(
+                BitmapDescriptorFactory
+                        .defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                .position(pos));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 15));
     }
 
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -63,7 +142,7 @@ public class GooglePlacesAutocompleteActivity extends Activity implements OnItem
         try {
             StringBuilder sb = new StringBuilder(PLACES_API_BASE + TYPE_AUTOCOMPLETE + OUT_JSON);
             sb.append("?key=" + API_KEY);
-            sb.append("&components=country:gr");
+            sb.append("&components=country:sg");
             sb.append("&input=" + URLEncoder.encode(input, "utf8"));
 
             URL url = new URL(sb.toString());

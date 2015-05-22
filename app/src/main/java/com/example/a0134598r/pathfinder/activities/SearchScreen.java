@@ -35,7 +35,7 @@ public class SearchScreen extends Activity {
     ArrayAdapter<String> adpt;
 
     RadioButton estate_name,specific_loc,rb,current_loc;
-    AutoCompleteTextView estateText,address;
+    AutoCompleteTextView estateText;
     Button find;
     ArrayList<String> neighSpin;
     List<String> neighList;
@@ -124,7 +124,6 @@ public class SearchScreen extends Activity {
                 if(rb.getId()==estate_name.getId()){
                     estateText.setVisibility(View.VISIBLE);
 
-                    address.setVisibility(View.GONE);
 
 
                 }
@@ -132,13 +131,13 @@ public class SearchScreen extends Activity {
 
 
 
-                    address.setVisibility(View.VISIBLE);
+
                     estateText.setVisibility(View.GONE);
 
 
                 }
                 else{
-                    address.setVisibility(View.GONE);
+
                     estateText.setVisibility(View.GONE);
 
                 }
@@ -155,7 +154,6 @@ public class SearchScreen extends Activity {
         current_loc = (RadioButton)findViewById(R.id.current_loc);
         current_loc.isChecked();
         specific_loc =(RadioButton)findViewById(R.id.specific_loc);
-        address = (AutoCompleteTextView)findViewById(R.id.address);
         find = (Button)findViewById(R.id.find);
         retrieveFromCloud();
         adpt = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,neighSpin);
