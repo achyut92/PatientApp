@@ -1,4 +1,4 @@
-package com.example.a0134598r.pathfinder;
+package com.example.a0134598r.pathfinder.utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,9 +25,9 @@ import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.Menu;
 
+import com.example.a0134598r.pathfinder.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;

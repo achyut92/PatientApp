@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/PathFinder_clinic.iml" filepath="$PROJECT_DIR$/PathFinder_clinic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ClicLoc.iml" filepath="$PROJECT_DIR$/ClicLoc.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

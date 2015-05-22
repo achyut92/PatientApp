@@ -1,4 +1,4 @@
-package com.example.a0134598r.pathfinder;
+package com.example.a0134598r.pathfinder.utils;
 
 import android.app.AlertDialog;
 import android.app.Service;
@@ -26,7 +26,7 @@ public class GPSTracker extends Service implements LocationListener {
     boolean isNetworkEnabled = false;
 
     // flag for GPS status
-    boolean canGetLocation = false;
+    public boolean canGetLocation = false;
 
     Location location; // location
     double latitude; // latitude

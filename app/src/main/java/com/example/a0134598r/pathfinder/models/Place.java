@@ -1,4 +1,4 @@
-package com.example.a0134598r.pathfinder;
+package com.example.a0134598r.pathfinder.models;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,7 +62,7 @@ public class Place {
         this.vicinity = vicinity;
     }
 
-    static Place jsonToPontoReferencia(JSONObject pontoReferencia) {
+    public static Place jsonToPontoReferencia(JSONObject pontoReferencia) {
         try {
             Place result = new Place();
             JSONObject geometry = (JSONObject) pontoReferencia.get("geometry");

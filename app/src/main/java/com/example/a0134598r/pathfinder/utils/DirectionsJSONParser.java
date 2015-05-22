@@ -1,4 +1,4 @@
-package com.example.a0134598r.pathfinder;
+package com.example.a0134598r.pathfinder.utils;
 
 /**
  * Created by a0134598r on 4/24/2015.

@@ -1,29 +1,25 @@
-package com.example.a0134598r.pathfinder;
+package com.example.a0134598r.pathfinder.activities;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
-import android.location.Address;
-import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.a0134598r.pathfinder.models.Place;
+import com.example.a0134598r.pathfinder.R;
+import com.example.a0134598r.pathfinder.utils.DirectionsJSONParser;
+import com.example.a0134598r.pathfinder.utils.GPSTracker;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -199,10 +195,6 @@ public class FindClinicCurrent extends ActionBarActivity {
 
         //Start downloading json data from Google Directions API
         downloadTask.execute(url);
-
-
-        /*PathHelper path = new PathHelper(origin,destination);
-        mMap.addPolyline(path.getLineOptions());*/
 
     }
 
