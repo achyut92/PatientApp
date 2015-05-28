@@ -14,9 +14,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.example.a0134598r.pathfinder.R;
-import com.example.a0134598r.pathfinder.activities.FindClinicCurrent;
-import com.example.a0134598r.pathfinder.activities.FindClinicEstateName;
-import com.example.a0134598r.pathfinder.utils.GooglePlacesAutocompleteActivity;
 import com.parse.FindCallback;
 import com.parse.Parse;
 import com.parse.ParseACL;
@@ -102,7 +99,7 @@ public class SearchScreen extends Activity {
                 }
                 if(selectedId==specific_loc.getId()){
 
-                    Intent i = new Intent(getApplicationContext(),GooglePlacesAutocompleteActivity.class);
+                    Intent i = new Intent(getApplicationContext(),FindClincSpecificLoc.class);
                     startActivity(i);
                 }if(selectedId==estate_name.getId()){
                     Intent i = new Intent(getApplicationContext(),FindClinicEstateName.class);

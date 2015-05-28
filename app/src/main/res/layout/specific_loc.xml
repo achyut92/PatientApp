@@ -27,4 +27,28 @@
         android:layout_above="@id/rg_modes"
         class="com.google.android.gms.maps.SupportMapFragment"
         android:layout_below="@+id/address" />
+    <RadioGroup
+        android:id="@+id/rg_modes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal" >
+
+        <RadioButton android:id="@+id/rb_driving"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/str_rb_driving"
+            android:checked="true" />
+
+        <RadioButton android:id="@+id/rb_walking"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/str_rb_walking" />
+
+        <RadioButton android:id="@+id/rb_transit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/str_rb_transit" />
+
+    </RadioGroup>
 </RelativeLayout>

@@ -51,7 +51,7 @@
             android:name=".activities.FindClinicCurrent"
             android:label="@string/title_activity_find_clinic_current" >
         </activity>
-        <activity android:name=".utils.GooglePlacesAutocompleteActivity"/>
+        <activity android:name=".activities.FindClincSpecificLoc"/>
     </application>
 
 </manifest>
