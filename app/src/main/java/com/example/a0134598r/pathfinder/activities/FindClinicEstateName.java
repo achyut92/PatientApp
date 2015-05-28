@@ -11,7 +11,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.a0134598r.pathfinder.models.Place;
+import com.example.a0134598r.pathfinder.models.Clinic;
 import com.example.a0134598r.pathfinder.R;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -20,17 +20,15 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.parse.FindCallback;
+import com.parse.ParseAnalytics;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,13 +44,17 @@ public class FindClinicEstateName extends ActionBarActivity {
 
     //hard cording coordinate
 
-    private static double LAT = 1.3161811,
-            LNG = 103.7649377;
+    private static double LAT = 1.3161811, LNG = 103.7649377;
+
+    static int zoom=13;
 
 
 
     String estateName;
     String type = "hospital";
+
+    ArrayList<Clinic> result = new ArrayList<Clinic>();
+    int mark = 0;
 
 
 
@@ -61,6 +63,9 @@ public class FindClinicEstateName extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps_direction3);
 
+        //result = new ArrayList<Clinic>();
+        ParseAnalytics.trackAppOpenedInBackground(getIntent());
+
         //
         Intent i = getIntent();
         estateName = i.getStringExtra("estate_name");
@@ -68,7 +73,13 @@ public class FindClinicEstateName extends ActionBarActivity {
 
         setUpMapIfNeeded();
         setPreference();
-        findPlace();
+
+        retrieveFromCloudByEstateName(estateName);
+        //findPlace();
+
+        //findClinic();
+
+        //Log.i("uuuu","finished");
 
     }
 
@@ -97,8 +108,10 @@ public class FindClinicEstateName extends ActionBarActivity {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                    .getMap();
+            //mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+            //      .getMap();
+
+            // in get places.
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
                 setUpMap();
@@ -159,7 +172,7 @@ public class FindClinicEstateName extends ActionBarActivity {
     private void gotoLocation(double lat, double lng) {
 
         LatLng ll = new LatLng(lat, lng);
-        CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, 15);
+        CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, zoom);
 
 
         //mMap.addMarker(new MarkerOptions().position(ll).title("This is a marker"));
@@ -169,145 +182,12 @@ public class FindClinicEstateName extends ActionBarActivity {
 
     }
 
-
-    private void findPlace(){
-
-        /*
-        ArrayList<Place> places = findPlaces(CLEMENTI_LAT,CLEMENTI_LNG,"hospital");
-
-        if (places.size() != 0){
-            Toast.makeText(this, places.get(0).getName(), Toast.LENGTH_LONG).show();
-        }
-
-       */
-
-        //Toast.makeText(this, makeUrl(CLEMENTI_LAT,CLEMENTI_LNG,"hospital"), Toast.LENGTH_LONG).show();
-
-        //tv.setText(makeUrl(CLEMENTI_LAT,CLEMENTI_LNG,"hospital"));
-
-        //getJSON()
-        /*
-        tv.setText(makeUrl(CLEMENTI_LAT,CLEMENTI_LNG,"hospital"));
-
-        String urlContents = getUrlContents(makeUrl(CLEMENTI_LAT,CLEMENTI_LNG,"hospital"));
-        Log.i("URL",urlContents);
-        */
-
-        //Log.i("URL",makeUrl(CLEMENTI_LAT,CLEMENTI_LNG,"hospital"));
-        //String urlContents = getUrlContents(makeUrl(CLEMENTI_LAT,CLEMENTI_LNG,"hospital"));
-        //Log.i("URL",urlContents);
-
-
-
-        new GetPlaces(FindClinicEstateName.this,
-                type.toLowerCase().replace(
-                        "-", "_").replace(" ", "_")).execute();
-
-
+    private void findClinic(){
 
 
     }
 
-
-    //https://maps.googleapis.com/maps/api/place/search/json?&location=1.3161811,103.7649377&radius=1000&types=hospital&sensor=false&key=AIzaSyAXNTxodHtPuBG0N54tgdZYRfNY2FRDej8
-    //https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=1.3161811,103.7649377&radius=500&types=hospital&key=AIzaSyAXNTxodHtPuBG0N54tgdZYRfNY2FRDej8
-    private String makeUrl(double latitude, double longitude, String place) {
-        StringBuilder urlString = new StringBuilder(
-                "https://maps.googleapis.com/maps/api/place/search/json?");
-
-        if (place.equals("")) {
-            urlString.append("&location=");
-            urlString.append(Double.toString(latitude));
-            urlString.append(",");
-            urlString.append(Double.toString(longitude));
-            urlString.append("&radius=1000");
-            // urlString.append("&types="+place);
-            urlString.append("&sensor=false&key=" + API_KEY);
-        } else {
-            urlString.append("&location=");
-            urlString.append(Double.toString(latitude));
-            urlString.append(",");
-            urlString.append(Double.toString(longitude));
-            urlString.append("&radius=1000");
-            urlString.append("&types=" + place);
-            urlString.append("&sensor=false&key=" + API_KEY);
-        }
-        return urlString.toString();
-    }
-
-
-    protected String getJSON(String url) {
-        return getUrlContents(url);
-    }
-
-    private String getUrlContents(String theUrl) {
-        StringBuilder content = new StringBuilder();
-        try {
-            URL url = new URL(theUrl);
-            URLConnection urlConnection = url.openConnection();
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(urlConnection.getInputStream()));
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                content.append(line + "\n");
-            }
-            bufferedReader.close();
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-        return content.toString();
-    }
-
-
-    public ArrayList<Place> findPlaces(double latitude, double longitude,
-                                       String placeSpacification) {
-
-        String urlString = makeUrl(latitude, longitude, placeSpacification);
-
-        Log.i("IIIII",urlString);
-        //try {
-        Log.i("jjjjj","hello");
-        String json = getJSON(urlString);
-
-        JSONObject object = null;
-        try {
-            object = new JSONObject(json);
-
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        JSONArray array = null;
-        try {
-            array = object.getJSONArray("results");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-
-        ArrayList<Place> arrayList = new ArrayList<Place>();
-            for (int i = 0; i < array.length(); i++) {
-                try {
-                    //Log.i("IIIII",arrayList.get(i).getName());
-                    Place place = Place
-                            .jsonToPontoReferencia((JSONObject) array.get(i));
-                    Log.v("Places Services ", "" + place);
-                    arrayList.add(place);
-
-                } catch (Exception e) {
-                }
-            }
-            return arrayList;
-
-
-
-    }
-
-
-
-    private class GetPlaces extends AsyncTask<Void, Void, ArrayList<Place>> {
+    private class GetPlaces extends AsyncTask<Void, Void, ArrayList<Clinic>> {
 
         private ProgressDialog dialog;
         private Context context;
@@ -319,30 +199,43 @@ public class FindClinicEstateName extends ActionBarActivity {
         }
 
         @Override
-        protected void onPostExecute(ArrayList<Place> result) {
+        protected void onPostExecute(ArrayList<Clinic> result) {
             super.onPostExecute(result);
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
+            if (mMap == null) {
+                mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                        .getMap();
+            }
+            //Toast.makeText(getApplicationContext(),String.valueOf(result.size()) , Toast.LENGTH_LONG).show();
             for (int i = 0; i < result.size(); i++) {
+                LatLng PERTH = new LatLng(result.get(i).getLATITUDE(), result
+                        .get(i).getLONGITUDE());
+
                 mMap.addMarker(new MarkerOptions()
-                        .title(result.get(i).getName())
-                        .position(
-                                new LatLng(result.get(i).getLatitude(), result
-                                        .get(i).getLongitude()))
+                        .title(result.get(i).getCLINIC())
+                        .position(PERTH)
                         .icon(BitmapDescriptorFactory
                                 .fromResource(R.mipmap.iconpin))
-                        .snippet(result.get(i).getVicinity()));
+                        .snippet(result.get(i).getADDRESS_1()));
+                Toast.makeText(getApplicationContext(),String.valueOf(result.get(i).getLONGITUDE()) , Toast.LENGTH_LONG).show();
             }
+
             CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(result.get(0).getLatitude(), result
-                            .get(0).getLongitude())) // Sets the center of the map to
+                    .target(new LatLng(result.get(0).getLATITUDE(), result
+                            .get(0).getLONGITUDE())) // Sets the center of the map to
                             // Mountain View
-                    .zoom(14) // Sets the zoom
-                    .tilt(30) // Sets the tilt of the camera to 30 degrees
+                    .zoom(zoom) // Sets the zoom
                     .build(); // Creates a CameraPosition from the builder
             mMap.animateCamera(CameraUpdateFactory
                     .newCameraPosition(cameraPosition));
+
+            LatLng PERTH = new LatLng(-31.90, 115.86);
+            Marker perth = mMap.addMarker(new MarkerOptions()
+                    .position(PERTH)
+                    .draggable(true));
+
         }
 
         @Override
@@ -356,39 +249,37 @@ public class FindClinicEstateName extends ActionBarActivity {
         }
 
         @Override
-        protected ArrayList<Place> doInBackground(Void... arg0) {
+        protected ArrayList<Clinic> doInBackground(Void... arg0) {
+            return result;
+        }
 
-            ArrayList<Place> findPlaces = findPlaces(LAT, // 28.632808
-                    LNG, places); // 77.218276
+    }
 
-            for (int i = 0; i < findPlaces.size(); i++) {
+    private void retrieveFromCloudByEstateName(String estateName) {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Clinic");
+        query.whereEqualTo("ESTATE", estateName);
+        query.findInBackground(new FindCallback<ParseObject>() {
 
-                Place placeDetail = findPlaces.get(i);
-                Log.i("Answer:", "places : " + placeDetail.getName());
+            @Override
+            public void done(List<ParseObject> objects, ParseException e) {
+
+                if (objects.size() >= 1) {
+                    for (ParseObject po : objects) {
+                        Clinic clinic = new Clinic(po.getString("CLINIC"),po.getString("ADDRESS_1"),po.getString("ESTATE"),po.getDouble("LATITUDE"),
+                                po.getDouble("LONGITUDE"));
+
+                        result.add(clinic);
+                        Log.i("uuu", po.getString("CLINIC"));
+                    }
+                    //theId = objects.get(0).getObjectId();
+                }
+
+                new GetPlaces(FindClinicEstateName.this,
+                        type.toLowerCase().replace(
+                                "-", "_").replace(" ", "_")).execute();
+
+
             }
-            return findPlaces;
-        }
-
+        });
     }
-
-
-    /*
-    private void writeToFile(String data) {
-
-        File file;
-        FileOutputStream outputStream;
-        try {
-            // file = File.createTempFile("MyCache", null, getCacheDir());
-            file = new File(getCacheDir(), "json.txt");
-
-            outputStream = new FileOutputStream(file);
-            outputStream.write(data.getBytes());
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-*/
-
 }

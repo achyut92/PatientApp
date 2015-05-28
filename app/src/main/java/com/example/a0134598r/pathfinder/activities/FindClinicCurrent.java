@@ -11,6 +11,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.example.a0134598r.pathfinder.models.Clinic;
 import com.example.a0134598r.pathfinder.models.Place;
 import com.example.a0134598r.pathfinder.R;
 import com.example.a0134598r.pathfinder.utils.DirectionsJSONParser;
@@ -20,6 +21,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -27,6 +29,11 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseGeoPoint;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -47,6 +54,14 @@ public class FindClinicCurrent extends ActionBarActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
+    public GoogleMap getmMap() {
+        return mMap;
+    }
+
+    public void setmMap(GoogleMap mMap) {
+        this.mMap = mMap;
+    }
+
 
     //private String API_KEY = getResources().getString(R.string.google_maps_key);
 
@@ -60,19 +75,22 @@ public class FindClinicCurrent extends ActionBarActivity {
 //
 
     String type = "hospital";
+    ArrayList<Clinic> result;
 
     LatLng origin;
     LatLng destination;
     Polyline line;
-    RadioButton rbDriving;
 
+    RadioButton rbDriving;
     RadioButton rbWalking;
     RadioGroup rgModes;
     RadioButton rbTransit;
-    int mMode=0;
-    final int MODE_DRIVING=0;
-    final int MODE_WALKING=1;
-    final int MODE_TRANSIT=2;
+    int mMode = 0;
+    final int MODE_DRIVING = 0;
+    final int MODE_WALKING = 1;
+    final int MODE_TRANSIT = 2;
+
+    static int zoom =13;
 
 
     @Override
@@ -96,8 +114,10 @@ public class FindClinicCurrent extends ActionBarActivity {
 
         setUpMapIfNeeded();
 
-        gotoLocation(LAT,LNG);
-        findPlace();
+        gotoLocation(LAT, LNG);
+        retrieveGeoPoint();
+
+        //findPlace();
 
     }
 
@@ -145,22 +165,21 @@ public class FindClinicCurrent extends ActionBarActivity {
         //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
         setPreference();
         initializeCurrentLocation();
-        setListener();
+        //setListener();
     }
 
 
-
-    private void initializeCurrentLocation(){
+    private void initializeCurrentLocation() {
 
         GPSTracker gps = new GPSTracker(FindClinicCurrent.this);
-        if(gps.canGetLocation) {
+        if (gps.canGetLocation) {
             LAT = gps.getLatitude();
             LNG = gps.getLongitude();
-        }else{
+        } else {
             gps.showSettingsAlert();
         }
 
-        origin = new LatLng(LAT,LNG);
+        origin = new LatLng(LAT, LNG);
     }
 
     private void setPreference() {
@@ -170,46 +189,23 @@ public class FindClinicCurrent extends ActionBarActivity {
 
     }
 
-    private void setListener(){
 
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                //refresh path Builder
-                if (line != null) {
-                    line.remove();
-                }
-                destination = marker.getPosition();
-                Log.i("iiii",destination.latitude+" "+destination.longitude);
-                pathBuilder();
-                return true;
-            }
-        });
-    }
 
-    private void pathBuilder(){
-       // Getting URL to the Google Directions API
-        String url = getDirectionsUrl(this.origin, this.destination);
-
-        DownloadTask downloadTask = new DownloadTask();
-
-        //Start downloading json data from Google Directions API
-        downloadTask.execute(url);
-
-    }
 
     private void gotoLocation(double lat, double lng) {
 
         LatLng ll = new LatLng(lat, lng);
-        CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, 13);
+        CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, zoom);
         MarkerOptions option = new MarkerOptions();
         option.position(ll);
+        option.title("YOU");
+
         mMap.addMarker(option);
 
         //mMap.addMarker(new MarkerOptions().position(ll).title("This is a marker"));
         mMap.animateCamera(update);
 
-        Toast.makeText(this, lat+"    "+lng, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, lat + "    " + lng, Toast.LENGTH_LONG).show();
 
         Circle circle = mMap.addCircle(new CircleOptions()
                 .center(ll)
@@ -220,151 +216,84 @@ public class FindClinicCurrent extends ActionBarActivity {
     }
 
 
-    private void findPlace(){
+    private void retrieveGeoPoint(){
 
-        new GetPlaces(FindClinicCurrent.this,
-                type.toLowerCase().replace(
-                        "-", "_").replace(" ", "_")).execute();
-    }
-
-
-    //https://maps.googleapis.com/maps/api/place/search/json?&location=1.3161811,103.7649377&radius=1000&types=hospital&sensor=false&key=AIzaSyAXNTxodHtPuBG0N54tgdZYRfNY2FRDej8
-    //https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=1.3161811,103.7649377&radius=500&types=hospital&key=AIzaSyAXNTxodHtPuBG0N54tgdZYRfNY2FRDej8
-    private String makeUrl(double latitude, double longitude, String place) {
-        StringBuilder urlString = new StringBuilder(
-                "https://maps.googleapis.com/maps/api/place/search/json?");
-
-        if (place.equals("")) {
-            urlString.append("&location=");
-            urlString.append(Double.toString(latitude));
-            urlString.append(",");
-            urlString.append(Double.toString(longitude));
-            urlString.append("&radius=3000");
-            // urlString.append("&types="+place);
-            urlString.append("&sensor=false&key=" + API_KEY);
-        } else {
-            urlString.append("&location=");
-            urlString.append(Double.toString(latitude));
-            urlString.append(",");
-            urlString.append(Double.toString(longitude));
-            urlString.append("&radius=3000");
-            urlString.append("&types=" + place);
-            urlString.append("&sensor=false&key=" + API_KEY);
-        }
-        return urlString.toString();
-    }
+        ParseGeoPoint object = new ParseGeoPoint(LAT,LNG);
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("ClinicDetail");
+        query.whereWithinKilometers("GEOPOINT",object,3.00);
+        query.findInBackground(new FindCallback<ParseObject>() {
 
 
-    protected String getJSON(String url) {
-        return getUrlContents(url);
-    }
+            @Override
+            public void done(List<ParseObject> parseObjects, ParseException e) {
 
-    private String getUrlContents(String theUrl) {
-        StringBuilder content = new StringBuilder();
-        try {
-            URL url = new URL(theUrl);
-            URLConnection urlConnection = url.openConnection();
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(urlConnection.getInputStream()));
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                content.append(line + "\n");
+
+                result = new ArrayList<Clinic>();
+                if (parseObjects.size() >= 1) {
+                    for (ParseObject po : parseObjects) {
+                        ParseGeoPoint userLocation = po.getParseGeoPoint("GEOPOINT");
+                        Clinic clinic = new Clinic(po.getString("CLINIC"),po.getString("ADDRESS_1"),po.getString("ESTATE"),userLocation.getLatitude(),
+                                userLocation.getLongitude());
+
+                        result.add(clinic);
+
+                    }
+                    //theId = objects.get(0).getObjectId();
+                }
+
+                Log.i("rrr", String.valueOf(result.size()));
+
+
+                new GetPlaces(FindClinicCurrent.this, result).execute();
+
             }
-            bufferedReader.close();
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-        return content.toString();
-    }
-
-
-    public ArrayList<Place> findPlaces(double latitude, double longitude,
-                                       String placeSpacification) {
-
-        String urlString = makeUrl(latitude, longitude, placeSpacification);
-
-        Log.i("IIIII",urlString);
-        //try {
-        Log.i("jjjjj","hello");
-        String json = getJSON(urlString);
-
-        JSONObject object = null;
-        try {
-            object = new JSONObject(json);
-
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        JSONArray array = null;
-        try {
-            array = object.getJSONArray("results");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-
-        ArrayList<Place> arrayList = new ArrayList<Place>();
-        for (int i = 0; i < array.length(); i++) {
-            try {
-                //Log.i("IIIII",arrayList.get(i).getName());
-                Place place = Place
-                        .jsonToPontoReferencia((JSONObject) array.get(i));
-                Log.v("Places Services ", "" + place);
-                arrayList.add(place);
-
-            } catch (Exception e) {
-            }
-        }
-        return arrayList;
-
-
+        });
 
     }
 
 
-
-    private class GetPlaces extends AsyncTask<Void, Void, ArrayList<Place>> {
+    private class GetPlaces extends AsyncTask<Void, Void, ArrayList<Clinic>> {
 
         private ProgressDialog dialog;
         private Context context;
         private String places;
+        private ArrayList<Clinic> res;
 
-        public GetPlaces(Context context, String places) {
+        public GetPlaces(Context context,ArrayList<Clinic> res) {
             this.context = context;
             this.places = places;
+            this.res = res;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<Place> result) {
+        protected void onPostExecute(ArrayList<Clinic> result) {
             super.onPostExecute(result);
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
-            for (int i = 0; i < result.size(); i++) {
-                mMap.addMarker(new MarkerOptions()
-                        .title(result.get(i).getName())
-                        .position(
-                                new LatLng(result.get(i).getLatitude(), result
-                                        .get(i).getLongitude()))
-                        .icon(BitmapDescriptorFactory
-                                .fromResource(R.mipmap.iconpin))
-                        .snippet(result.get(i).getVicinity()));
+
+            GoogleMap somemap = FindClinicCurrent.this.getmMap();
+            if (somemap == null) {
+                //GoogleMap somemap = FindClinicCurrent.this.getmMap();
+                somemap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                        .getMap();
             }
 
-            /*
+            setMarker(somemap, this.res);
+            setListener(somemap);
+            //Toast.makeText(getApplicationContext(),String.valueOf(result.size()) , Toast.LENGTH_LONG).show();
+
+
             CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(result.get(0).getLatitude(), result
-                            .get(0).getLongitude())) // Sets the center of the map to
+                    .target(new LatLng(result.get(0).getLATITUDE(), result
+                            .get(0).getLONGITUDE())) // Sets the center of the map to
                             // Mountain View
-                    .zoom(14) // Sets the zoom
-                    .tilt(30) // Sets the tilt of the camera to 30 degrees
+                    .zoom(zoom) // Sets the zoom
                     .build(); // Creates a CameraPosition from the builder
             mMap.animateCamera(CameraUpdateFactory
                     .newCameraPosition(cameraPosition));
-                    */
+
+
         }
 
         @Override
@@ -378,22 +307,62 @@ public class FindClinicCurrent extends ActionBarActivity {
         }
 
         @Override
-        protected ArrayList<Place> doInBackground(Void... arg0) {
+        protected ArrayList<Clinic> doInBackground(Void... arg0) {
+            return this.res;
+        }
 
-            ArrayList<Place> findPlaces = findPlaces(LAT, // 28.632808
-                    LNG, places); // 77.218276
 
-            for (int i = 0; i < findPlaces.size(); i++) {
+        private void setMarker(GoogleMap map,ArrayList<Clinic> result){
 
-                Place placeDetail = findPlaces.get(i);
-                Log.i("Answer:", "places : " + placeDetail.getName());
+            for (int i = 0; i < result.size(); i++) {
+                LatLng PERTH = new LatLng(result.get(i).getLATITUDE(), result
+                        .get(i).getLONGITUDE());
+
+                map.addMarker(new MarkerOptions()
+                        .title(result.get(i).getCLINIC())
+                        .position(PERTH)
+                        .icon(BitmapDescriptorFactory
+                                .fromResource(R.mipmap.iconpin))
+                        .snippet(result.get(i).getADDRESS_1()));
+                //clinicMarker.set(i,tempMarker);
+                //Toast.makeText(getApplicationContext(),String.valueOf(result.get(i).getLONGITUDE()) , Toast.LENGTH_LONG).show();
+
             }
-            return findPlaces;
+
+        }
+        private void setListener(GoogleMap map) {
+
+            map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker) {
+                    //maker info popup
+                   marker.showInfoWindow();
+                    //refresh path Builder
+                    if (line != null) {
+                        line.remove();
+                    }
+                    destination = marker.getPosition();
+                    Log.i("iiii", destination.latitude + " " + destination.longitude);
+                    pathBuilder();
+
+
+                    return true;
+                }
+            });
         }
 
     }
 
-////////////////////////////////////////////////
+    private void pathBuilder(){
+        // Getting URL to the Google Directions API
+        String url = getDirectionsUrl(this.origin, this.destination);
+
+        DownloadTask downloadTask = new DownloadTask();
+
+        //Start downloading json data from Google Directions API
+        downloadTask.execute(url);
+
+    }
     private String getDirectionsUrl(LatLng origin,LatLng dest){
 
         // Origin of route
@@ -430,7 +399,7 @@ public class FindClinicCurrent extends ActionBarActivity {
         return url;
     }
 
-    /** A method to download json data from url */
+    // A method to download json data from url
     private String downloadUrl(String strUrl) throws IOException {
         String data = "";
         InputStream iStream = null;
@@ -468,10 +437,7 @@ public class FindClinicCurrent extends ActionBarActivity {
         }
         return data;
     }
-
-
-
-    /** A class to download data from Google Directions URL */
+    // A class to download data from Google Directions URL
     private class DownloadTask extends AsyncTask<String, Void, String> {
 
         // Downloading data in non-ui thread
@@ -504,7 +470,7 @@ public class FindClinicCurrent extends ActionBarActivity {
         }
     }
 
-    /** A class to parse the Google Directions in JSON format */
+    // A class to parse the Google Directions in JSON format
     private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
 
         // Parsing the data in non-ui thread
@@ -569,9 +535,13 @@ public class FindClinicCurrent extends ActionBarActivity {
             }
 
             // Drawing polyline in the Google Map for the i-th route
-                line = mMap.addPolyline(lineOptions);
+            line = mMap.addPolyline(lineOptions);
 
         }
     }
 
 }
+
+
+
+
