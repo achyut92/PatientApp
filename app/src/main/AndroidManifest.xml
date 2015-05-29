@@ -18,6 +18,7 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
+        android:name=".data.ParseApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -44,8 +45,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".utils.MapsActivity" />
-        <activity android:name=".activities.MainActivity" />
         <activity android:name=".activities.FindClinicEstateName" />
         <activity
             android:name=".activities.FindClinicCurrent"

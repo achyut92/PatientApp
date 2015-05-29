@@ -14,6 +14,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.example.a0134598r.pathfinder.R;
+import com.example.a0134598r.pathfinder.data.ParseApplication;
 import com.parse.FindCallback;
 import com.parse.Parse;
 import com.parse.ParseACL;
@@ -44,11 +45,14 @@ public class SearchScreen extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search_clinic);
 
-        Parse.enableLocalDatastore(this);
+
+
+
+        /*Parse.enableLocalDatastore(this);
         Parse.initialize(this, "dQwUFTzXnMpimfW5Wh8G1J8GLkEXm24JXuUe8pWO", "XrKANWyNzclmbdAIFbVqkJbRdleBT2PPw5zWja5s");
         ParseUser.enableAutomaticUser();
         ParseACL defaultACL = new ParseACL();
-        ParseACL.setDefaultACL(defaultACL,true);
+        ParseACL.setDefaultACL(defaultACL,true);*/
 
         neighSpin = new ArrayList<String>();
 
@@ -101,6 +105,7 @@ public class SearchScreen extends Activity {
 
                     Intent i = new Intent(getApplicationContext(),FindClincSpecificLoc.class);
                     startActivity(i);
+
                 }if(selectedId==estate_name.getId()){
                     Intent i = new Intent(getApplicationContext(),FindClinicEstateName.class);
                     i.putExtra("estate_name",estateText.getText().toString());

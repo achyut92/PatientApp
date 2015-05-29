@@ -51,7 +51,6 @@ public class FindClinicEstateName extends ActionBarActivity {
 
 
     String estateName;
-    String type = "hospital";
 
     ArrayList<Clinic> result = new ArrayList<Clinic>();
     int mark = 0;
@@ -61,7 +60,7 @@ public class FindClinicEstateName extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps_direction3);
+        setContentView(R.layout.activity_find_clinic_estate);
 
         //result = new ArrayList<Clinic>();
         ParseAnalytics.trackAppOpenedInBackground(getIntent());
@@ -74,7 +73,9 @@ public class FindClinicEstateName extends ActionBarActivity {
         setUpMapIfNeeded();
         setPreference();
 
-        retrieveFromCloudByEstateName(estateName);
+
+            retrieveFromCloudByEstateName(estateName);
+
         //findPlace();
 
         //findClinic();
@@ -182,20 +183,16 @@ public class FindClinicEstateName extends ActionBarActivity {
 
     }
 
-    private void findClinic(){
 
-
-    }
 
     private class GetPlaces extends AsyncTask<Void, Void, ArrayList<Clinic>> {
 
         private ProgressDialog dialog;
         private Context context;
-        private String places;
 
-        public GetPlaces(Context context, String places) {
+        public GetPlaces(Context context) {
             this.context = context;
-            this.places = places;
+
         }
 
         @Override
@@ -272,11 +269,16 @@ public class FindClinicEstateName extends ActionBarActivity {
                         Log.i("uuu", po.getString("CLINIC"));
                     }
                     //theId = objects.get(0).getObjectId();
+                    new GetPlaces(FindClinicEstateName.this).execute();
+                }else {
+                    Toast.makeText(getApplicationContext(),"Clinic's could not be found in this locality!!Sorry.",Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent (getApplicationContext(),SearchScreen.class);
+                    startActivity(intent);
+                    finish();
+
+                    //startActivity(this.getParentActivityIntent());
                 }
 
-                new GetPlaces(FindClinicEstateName.this,
-                        type.toLowerCase().replace(
-                                "-", "_").replace(" ", "_")).execute();
 
 
             }
