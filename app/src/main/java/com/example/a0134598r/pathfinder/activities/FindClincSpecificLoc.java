@@ -104,7 +104,7 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.specific_loc);
+        setContentView(R.layout.activity_clinic_specific_loc);
         AutoCompleteTextView autoCompView = (AutoCompleteTextView) findViewById(R.id.address);
 
         autoCompView.setAdapter(new GooglePlacesAutocompleteAdapter(this, R.layout.list_item));
@@ -313,13 +313,17 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
                         result.add(clinic);
 
                     }
+                    new GetPlaces(FindClincSpecificLoc.this, result).execute();
                     //theId = objects.get(0).getObjectId();
                 }
+                else {
+                    Toast.makeText(getApplicationContext(),"Clinic's could not be found in this locality!!Sorry.",Toast.LENGTH_LONG).show();
+                }
 
-                Log.i("rrr", String.valueOf(result.size()));
+                //Log.i("rrr", String.valueOf(result.size()));
 
 
-                new GetPlaces(FindClincSpecificLoc.this, result).execute();
+
 
             }
         });
@@ -462,7 +466,7 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
             mode = "mode=walking";
             mMode = 1;
         }else if(rbTransit.isChecked()){
-            mode = "mode=transit";
+            mode = "transit_mode=train|bus&transit_routing_preference=fewer_trasfers";
             mMode = 2;
         }
 

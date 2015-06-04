@@ -238,13 +238,16 @@ public class FindClinicCurrent extends ActionBarActivity {
                         result.add(clinic);
 
                     }
+                    new GetPlaces(FindClinicCurrent.this, result).execute();
                     //theId = objects.get(0).getObjectId();
+                }else {
+                    Toast.makeText(getApplicationContext(),"Clinic's could not be found in this locality!!Sorry.",Toast.LENGTH_LONG).show();
                 }
 
-                Log.i("rrr", String.valueOf(result.size()));
+                //Log.i("rrr", String.valueOf(result.size()));
 
 
-                new GetPlaces(FindClinicCurrent.this, result).execute();
+
 
             }
         });
