@@ -1,8 +1,6 @@
 package com.example.a0134598r.pathfinder.activities;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -18,7 +16,6 @@ import org.json.JSONObject;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
@@ -32,71 +29,75 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.example.a0134598r.pathfinder.R;
+import com.example.a0134598r.pathfinder.System.GV;
+import com.example.a0134598r.pathfinder.System.WidgetHelper;
 import com.example.a0134598r.pathfinder.models.Clinic;
-import com.example.a0134598r.pathfinder.utils.DirectionsJSONParser;
+import com.example.a0134598r.pathfinder.utils.CustomInfoWindowAdapter;
+import com.example.a0134598r.pathfinder.utils.GPSTracker;
+import com.example.a0134598r.pathfinder.utils.LocationHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.parse.FindCallback;
+import com.parse.ParseAnalytics;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.pushbots.push.Pushbots;
 
 //import com.javacodegeeks.androidgoogleplacesautocomplete.R;
 
-public class FindClincSpecificLoc extends ActionBarActivity implements OnItemClickListener {
+public class FindClincSpecificLoc extends ActionBarActivity implements OnItemClickListener{
 
-    private static final String LOG_TAG = "ExampleApp";
+    private static final String LOG_TAG = GV.LOG_TAG;
+    private static final String PLACES_API_BASE = GV.PLACES_API_BASE;
+    private static final String TYPE_AUTOCOMPLETE = GV.TYPE_AUTOCOMPLETE;
+    private static final String OUT_JSON = GV.OUT_JSON;
 
-    private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
-    private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
-    private static final String OUT_JSON = "/json";
+    private long lastBackPressTime;
+    private Toast toast;
     GoogleMap mMap;
-
-    public GoogleMap getmMap() {
-        return mMap;
-    }
-
-    MarkerOptions mOption;
-
     AutoCompleteTextView address;
-    Button findLoc;
 
     double latitude = 0.00, longitude = 0.00;
 
     LatLng origin;
     LatLng destination;
 
-    Polyline line;
-
-    RadioButton rbDriving;
-    RadioButton rbWalking;
-    RadioGroup rgModes;
-    RadioButton rbTransit;
-    int mMode = 0;
-    final int MODE_DRIVING = 0;
-    final int MODE_WALKING = 1;
-    final int MODE_TRANSIT = 2;
-
     static int zoom = 13;
+
+    String autoCompText;
+
+    ArrayList<String> neighSpin;
 
     ArrayList<Clinic> result;
 
+    EditText finNumber;
+    Button submitButton;
+    Button clearButton;
+    Button backButton;
+
+
+    HashMap<String, HashMap> extraMarkerInfo = new HashMap<String, HashMap>();
+    HashMap<String, String> data = new HashMap<String, String>();
+    public CustomInfoWindowAdapter adapter;
+
+    public String clinic_name = null;
+
+    public GoogleMap getmMap() {
+        return mMap;
+    }
 
     //------------ make your specific key ------------
     private static final String API_KEY = "AIzaSyAXNTxodHtPuBG0N54tgdZYRfNY2FRDej8";
@@ -104,64 +105,115 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Pushbots.sharedInstance().init(this);
+        Pushbots.sharedInstance().setPushEnabled(true);
         setContentView(R.layout.activity_clinic_specific_loc);
-        AutoCompleteTextView autoCompView = (AutoCompleteTextView) findViewById(R.id.address);
 
-        autoCompView.setAdapter(new GooglePlacesAutocompleteAdapter(this, R.layout.list_item));
-        autoCompView.setOnItemClickListener(this);
+        ParseAnalytics.trackAppOpenedInBackground(getIntent());
+        initGUIAndParam();
 
-        address = (AutoCompleteTextView) findViewById(R.id.address);
-        findLoc = (Button) findViewById(R.id.findLoc);
-        rbDriving = (RadioButton) findViewById(R.id.rb_driving);
+        if (LocationHelper.isProviderEnabled(this)) {
+            initializeCurrentLocation();
+            setupMapIfNeeded();//refactored
+            gotoLocation(latitude, longitude);//refactored
+            getGeoPointFromParse();//refactored
+        }
 
+        address.setOnItemClickListener(setOnItemListeners());
 
-        // Getting reference to rb_walking
-        rbWalking = (RadioButton) findViewById(R.id.rb_walking);
+    }
 
-        // Getting reference to rb_transit
-        rbTransit = (RadioButton) findViewById(R.id.rb_transit);
+    @Override
+    public void onBackPressed() {
+        if (this.lastBackPressTime < System.currentTimeMillis() - 4000) {
+            toast = Toast.makeText(this, "Press back again to close this app", Toast.LENGTH_LONG);
+            toast.show();
+            this.lastBackPressTime = System.currentTimeMillis();
+        } else {
+            if (toast != null) {
+                toast.cancel();
+            }
+            super.onBackPressed();
+        }
+    }
 
-        // Getting Reference to rg_modes
-        rgModes = (RadioGroup) findViewById(R.id.rg_modes);
-
-
+    @Override
+    protected void onResume() {
+        super.onResume();
         setupMapIfNeeded();
     }
 
-    public void setupMapIfNeeded() {
-        if (mMap == null) {
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
-            mOption = new MarkerOptions();
-        }
-        if (mMap != null) {
-            setupMap();
-        }
+    private void initGUIAndParam() {
+
+        neighSpin = new ArrayList<String>();
+        result = new ArrayList<Clinic>();
+        adapter = new CustomInfoWindowAdapter(this);
+        address = (AutoCompleteTextView) findViewById(R.id.address);
+        address.setText("");
+        address.setAdapter(new GooglePlacesAutocompleteAdapter(FindClincSpecificLoc.this, R.layout.list_item));
     }
 
-    public void setupMap() {
 
-        findLoc.setOnClickListener(new View.OnClickListener() {
+    private AdapterView.OnItemClickListener setOnItemListeners() {
+
+        AdapterView.OnItemClickListener oc = new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                setupMapIfNeeded();//pass
+                refreshLocation();//pass
+                getGeoPointFromParse();//pass
 
                 InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
-                if (mOption.isVisible()) {
-                    mMap.clear();
-                }
-                getCoordinates();
-                retrieveGeoPoint();
+                autoCompText = null;
+                latitude = 0.0;
+                longitude = 0.0;
             }
-        });
+        };
+        return oc;
     }
 
-    public void getCoordinates() {
-        String autoCompText = address.getText().toString();
+
+    public void setupMapIfNeeded() {
+
+        if (mMap == null) {
+            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(GV.MAIN_PAGE_LAT, GV.MAIN_PAGE_LNG), GV.MAIN_PAGE_ZOOM));
+            mMap.setMyLocationEnabled(true);
+            mMap.setInfoWindowAdapter(adapter);
+            mMap.setOnInfoWindowClickListener(adapter);
+        }
+
+    }
+
+    private void initializeCurrentLocation() {
+
+        GPSTracker gps = new GPSTracker(FindClincSpecificLoc.this);
+        if (gps.canGetLocation) {
+            latitude = gps.getLatitude();
+            longitude = gps.getLongitude();
+        } else {
+            gps.showSettingsAlert();
+            Toast.makeText(this, "gps need to be open!", Toast.LENGTH_LONG);
+        }
+
+        origin = new LatLng(latitude, longitude);
+    }
+
+
+    private void gotoLocation(double lat, double lng) {
+
+        LatLng ll = new LatLng(lat, lng);
+        WidgetHelper.addMarkerWithCircleAndGoTo(mMap, WidgetHelper.setMarkerOptions(ll), ll);
+        Toast.makeText(this, lat + "    " + lng, Toast.LENGTH_LONG).show();
+    }
+
+    public void refreshLocation() {
+        autoCompText = address.getText().toString();
         Geocoder geoCoder = new Geocoder(FindClincSpecificLoc.this);
-
-        LatLng pos;
-
         try {
             List<Address> addresses =
                     geoCoder.getFromLocationName(autoCompText, 1);
@@ -174,14 +226,14 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
             e.printStackTrace();
         }
 
-
         origin = new LatLng(latitude, longitude);
         mMap.addMarker(new MarkerOptions().icon(
                 BitmapDescriptorFactory
                         .defaultMarker(BitmapDescriptorFactory.HUE_RED))
                 .position(origin).title("YOU"));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(origin, zoom));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(origin, GV.MARKER_ZOOM));
     }
+
 
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
         String str = (String) adapterView.getItemAtPosition(position);
@@ -243,6 +295,7 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
         return resultList;
     }
 
+
     class GooglePlacesAutocompleteAdapter extends ArrayAdapter<String> implements Filterable {
         private ArrayList<String> resultList;
 
@@ -290,23 +343,21 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
         }
     }
 
-    ////////////
-    private void retrieveGeoPoint() {
+
+    private void getGeoPointFromParse() {
 
         ParseGeoPoint object = new ParseGeoPoint(latitude, longitude);
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("ClinicDetail");
-        query.whereWithinKilometers("GEOPOINT", object, 2.00);
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(GV.CLINIC_DETAIL_TABLE_P);
+        query.whereWithinKilometers(GV.GEOPOINT, object, GV.PARSE_RADUIUS);
         query.findInBackground(new FindCallback<ParseObject>() {
-
 
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {
 
-
                 result = new ArrayList<Clinic>();
                 if (parseObjects.size() >= 1) {
                     for (ParseObject po : parseObjects) {
-                        ParseGeoPoint userLocation = po.getParseGeoPoint("GEOPOINT");
+                        ParseGeoPoint userLocation = po.getParseGeoPoint(GV.GEOPOINT);
                         Clinic clinic = new Clinic(po.getString("CLINIC"), po.getString("ADDRESS_1"), po.getString("ESTATE"), userLocation.getLatitude(),
                                 userLocation.getLongitude());
 
@@ -315,16 +366,9 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
                     }
                     new GetPlaces(FindClincSpecificLoc.this, result).execute();
                     //theId = objects.get(0).getObjectId();
+                } else {
+                    Toast.makeText(getApplicationContext(), GV.ERROR_CLINIC_UNFOUND, Toast.LENGTH_LONG).show();
                 }
-                else {
-                    Toast.makeText(getApplicationContext(),"Clinic's could not be found in this locality!!Sorry.",Toast.LENGTH_LONG).show();
-                }
-
-                //Log.i("rrr", String.valueOf(result.size()));
-
-
-
-
             }
         });
 
@@ -340,9 +384,9 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
 
         public GetPlaces(Context context, ArrayList<Clinic> res) {
             this.context = context;
-            this.places = places;
             this.res = res;
         }
+
 
         @Override
         protected void onPostExecute(ArrayList<Clinic> result) {
@@ -358,21 +402,9 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
                         .getMap();
             }
 
-            setMarker(somemap, this.res);
-            setListener(somemap);
-            //Toast.makeText(getApplicationContext(),String.valueOf(result.size()) , Toast.LENGTH_LONG).show();
-
-
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(result.get(0).getLATITUDE(), result
-                            .get(0).getLONGITUDE())) // Sets the center of the map to
-                            // Mountain View
-                    .zoom(zoom) // Sets the zoom
-                    .build(); // Creates a CameraPosition from the builder
-            mMap.animateCamera(CameraUpdateFactory
-                    .newCameraPosition(cameraPosition));
-
-
+            //setMarker(somemap, this.res);
+            WidgetHelper.setMarkerFromArrayList(somemap, this.res);
+            setListener(somemap); //pending for refactoring
         }
 
         @Override
@@ -390,27 +422,8 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
             return this.res;
         }
 
-
-        private void setMarker(GoogleMap map, ArrayList<Clinic> result) {
-
-            for (int i = 0; i < result.size(); i++) {
-                LatLng PERTH = new LatLng(result.get(i).getLATITUDE(), result
-                        .get(i).getLONGITUDE());
-
-                map.addMarker(new MarkerOptions()
-                        .title(result.get(i).getCLINIC())
-                        .position(PERTH)
-                        .icon(BitmapDescriptorFactory
-                                .fromResource(R.mipmap.iconpin))
-                        .snippet(result.get(i).getADDRESS_1()));
-                //clinicMarker.set(i,tempMarker);
-                //Toast.makeText(getApplicationContext(),String.valueOf(result.get(i).getLONGITUDE()) , Toast.LENGTH_LONG).show();
-
-            }
-
-        }
-
     }
+
     private void setListener(GoogleMap map) {
 
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
@@ -419,208 +432,15 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
                 //maker info popup
                 marker.showInfoWindow();
                 //refresh path Builder
-                if (line != null) {
-                    line.remove();
-                }
                 destination = marker.getPosition();
-
-                Log.i("iiii", origin.latitude + " " + origin.longitude);
-                Log.i("iiii", destination.latitude + " " + destination.longitude);
-                pathBuilder();
-
-
+                clinic_name = marker.getTitle();
+                adapter.setDestination(destination);
+                adapter.setClinicName(clinic_name);
+//                PathDrawer pd = new PathDrawer(mMap);
+//                pd.pathBuilder(origin,destination);
                 return true;
             }
         });
     }
-
-
-
-    private void pathBuilder(){
-        // Getting URL to the Google Directions API
-        String url = getDirectionsUrl(origin, destination);
-
-        DownloadTask downloadTask = new DownloadTask();
-
-        //Start downloading json data from Google Directions API
-        downloadTask.execute(url);
-
-    }
-    private String getDirectionsUrl(LatLng origin,LatLng dest){
-
-        // Origin of route
-        String str_origin = "origin="+origin.latitude+","+origin.longitude;
-
-        // Destination of route
-        String str_dest = "destination="+dest.latitude+","+dest.longitude;
-
-        // Sensor enabled
-        String sensor = "sensor=false";
-
-        String mode = "mode=driving";
-
-        if(rbDriving.isChecked()){
-            mode = "mode=driving";
-            mMode = 0 ;
-        }else if(rbWalking.isChecked()){
-            mode = "mode=walking";
-            mMode = 1;
-        }else if(rbTransit.isChecked()){
-            mode = "transit_mode=train|bus&transit_routing_preference=fewer_trasfers";
-            mMode = 2;
-        }
-
-        // Building the parameters to the web service
-        String parameters = str_origin+"&"+str_dest+"&"+sensor+"&"+mode;
-
-        // Output format
-        String output = "json";
-
-        // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters;
-
-        return url;
-    }
-
-    // A method to download json data from url
-    private String downloadUrl(String strUrl) throws IOException {
-        String data = "";
-        InputStream iStream = null;
-        HttpURLConnection urlConnection = null;
-        try{
-            URL url = new URL(strUrl);
-
-            // Creating an http connection to communicate with url
-            urlConnection = (HttpURLConnection) url.openConnection();
-
-            // Connecting to url
-            urlConnection.connect();
-
-            // Reading data from url
-            iStream = urlConnection.getInputStream();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
-            StringBuffer sb  = new StringBuffer();
-
-            String line = "";
-            while( ( line = br.readLine())  != null){
-                sb.append(line);
-            }
-
-            data = sb.toString();
-
-            br.close();
-
-        }catch(Exception e){
-            Log.d("Exception while downloa", e.toString());
-        }finally{
-            iStream.close();
-            urlConnection.disconnect();
-        }
-        return data;
-    }
-// A class to download data from Google Directions URL
-private class DownloadTask extends AsyncTask<String, Void, String> {
-
-    // Downloading data in non-ui thread
-    @Override
-    protected String doInBackground(String... url) {
-
-        // For storing data from web service
-        String data = "";
-
-        try{
-            // Fetching the data from web service
-            data = downloadUrl(url[0]);
-        }catch(Exception e){
-            Log.d("Background Task",e.toString());
-        }
-        return data;
-    }
-
-    // Executes in UI thread, after the execution of
-    // doInBackground()
-    @Override
-    protected void onPostExecute(String result) {
-        super.onPostExecute(result);
-
-        ParserTask parserTask = new ParserTask();
-
-        // Invokes the thread for parsing the JSON data
-        parserTask.execute(result);
-
-    }
 }
 
-// A class to parse the Google Directions in JSON format
-private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
-
-    // Parsing the data in non-ui thread
-    @Override
-    protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
-
-        JSONObject jObject;
-        List<List<HashMap<String, String>>> routes = null;
-
-        try{
-            jObject = new JSONObject(jsonData[0]);
-            DirectionsJSONParser parser = new DirectionsJSONParser();
-
-            // Starts parsing data
-            routes = parser.parse(jObject);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        return routes;
-    }
-
-    // Executes in UI thread, after the parsing process
-    @Override
-    protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-
-        ArrayList<LatLng> points = null;
-        PolylineOptions lineOptions = null;
-
-
-        // Traversing through all the routes
-        for(int i=0;i<result.size();i++){
-            points = new ArrayList<LatLng>();
-            lineOptions = new PolylineOptions();
-
-            // Fetching i-th route
-            List<HashMap<String, String>> path = result.get(i);
-
-            // Fetching all the points in i-th route
-            for(int j=0;j<path.size();j++){
-                HashMap<String,String> point = path.get(j);
-
-                double lat = Double.parseDouble(point.get("lat"));
-                double lng = Double.parseDouble(point.get("lng"));
-                LatLng position = new LatLng(lat, lng);
-
-                points.add(position);
-            }
-
-            // Adding all the points in the route to LineOptions
-            lineOptions.addAll(points);
-            lineOptions.width(7);
-            //lineOptions.color(Color.RED);
-
-            // Changing the color polyline according to the mode
-            if(mMode==MODE_DRIVING)
-                lineOptions.color(Color.RED);
-            else if(mMode==MODE_WALKING)
-                lineOptions.color(Color.BLUE);
-            else if(mMode==MODE_TRANSIT)
-                lineOptions.color(Color.GREEN);
-
-        }
-
-        // Drawing polyline in the Google Map for the i-th route
-        line = mMap.addPolyline(lineOptions);
-
-    }
-}
-
-}

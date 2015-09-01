@@ -10,6 +10,8 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
+
+
     }
     buildTypes {
         release {
@@ -21,10 +23,12 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:22.1.0'
-    compile 'com.google.android.gms:play-services:7.0.0'
-    compile 'com.parse.bolts:bolts-android:1.+'
     compile fileTree(include: 'Parse-*.jar', dir: 'libs')
     compile files('libs/Parse-1.9.2.jar')
     compile files('libs/ParseCrashReporting-1.9.2.jar')
+    compile 'com.android.support:appcompat-v7:22.1.1'
+    compile 'com.google.android.gms:play-services:7.5.0'
+    compile 'com.parse.bolts:bolts-android:1.+'
+    compile 'com.android.support:support-v4:22.1.1'
+    compile files('libs/pushbots-lib-2.0.13.jar')
 }

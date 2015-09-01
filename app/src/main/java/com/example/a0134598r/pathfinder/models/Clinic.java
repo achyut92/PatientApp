@@ -13,6 +13,13 @@ public class Clinic {
     private double LATITUDE;
     private double LONGITUDE;
 
+    public Clinic(){
+
+        this.CLINIC = "CLINIC";
+        this.ADDRESS_1 = "ADDRESS_1";
+        this.ESTATE = "ESTATE";
+    }
+
     public Clinic(String objectId, String ADDRESS_1, String ADDRESS_2, String CLINIC,
                   String ESTATE, double LATITUDE, double LONGITUDE) {
 
@@ -33,6 +40,8 @@ public class Clinic {
         this.LONGITUDE = LONGITUDE;
 
     }
+
+
 
     public String getObjectId() {
         return objectId;

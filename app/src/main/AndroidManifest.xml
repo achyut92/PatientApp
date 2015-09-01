@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
     <!--
  The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
@@ -17,10 +18,17 @@
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
+    <!-- GCM requires a Google account. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <permission android:name="com.example.a0134598r.pathfinder.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+    <uses-permission android:name="com.example.a0134598r.pathfinder.permission.C2D_MESSAGE" />
+    <!-- This app has permission to register and receive dataf message. -->
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
     <application
         android:name=".data.ParseApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/clinicloc"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <meta-data
@@ -37,20 +45,71 @@
             android:value="@string/parse_client_key" />
 
         <activity
-            android:name=".activities.SearchScreen"
+            android:name=".activities.FindClincSpecificLoc"
             android:label="@string/title_activity_maps" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="com.example.a0134598r.pathfinder.MESSAGE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
-        <activity android:name=".activities.FindClinicEstateName" />
         <activity
-            android:name=".activities.FindClinicCurrent"
-            android:label="@string/title_activity_find_clinic_current" >
+            android:name=".obsolete.FindClinicEstateName"
+            android:parentActivityName=".obsolete.SearchScreen" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".obsolete.SearchScreen" />
         </activity>
-        <activity android:name=".activities.FindClincSpecificLoc"/>
+        <activity
+            android:name=".obsolete.FindClinicCurrent"
+            android:label="@string/title_activity_find_clinic_current"
+            android:parentActivityName=".obsolete.SearchScreen" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".obsolete.SearchScreen" />
+        </activity>
+
+        <!--
+        <activity
+            android:name=".activities.FindClincSpecificLoc"
+            android:parentActivityName=".activities.SearchScreen">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.SearchScreen" />
+        </activity>
+        -->
+        <activity
+            android:name=".obsolete.CustomDialog"
+            android:label="@string/title_activity_custom_dialog" >
+        </activity>
+        <activity
+            android:name=".obsolete.CustomDialogQue"
+            android:label="@string/title_activity_custom_dialog_que" >
+        </activity>
+        <activity
+            android:name=".activities.QueueActivity"
+            android:label="@string/title_activity_queue" >
+        </activity>
+
+        <receiver
+            android:name="com.pushbots.google.gcm.GCMBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <!-- Receives the actual messages. -->
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <!-- Receives the registration id. -->
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <category android:name="com.example.a0134598r.pathfinder" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.pushbots.push.DefaultPushHandler" />
+        <service android:name="com.pushbots.push.GCMIntentService" />
+
+
     </application>
 
 </manifest>
