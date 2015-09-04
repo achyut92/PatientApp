@@ -36,7 +36,7 @@ import android.widget.Toast;
 
 import com.example.a0134598r.pathfinder.R;
 import com.example.a0134598r.pathfinder.System.GV;
-import com.example.a0134598r.pathfinder.System.WidgetHelper;
+import com.example.a0134598r.pathfinder.System.MarkerHelper;
 import com.example.a0134598r.pathfinder.models.Clinic;
 import com.example.a0134598r.pathfinder.utils.CustomInfoWindowAdapter;
 import com.example.a0134598r.pathfinder.utils.GPSTracker;
@@ -117,7 +117,7 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
             initializeCurrentLocation();
             setupMapIfNeeded();//refactored
             gotoLocation(latitude, longitude);//refactored
-            getGeoPointFromParse();//refactored
+            getGeoPointFromParse();//rename
         }
 
         address.setOnItemClickListener(setOnItemListeners());
@@ -207,7 +207,7 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
     private void gotoLocation(double lat, double lng) {
 
         LatLng ll = new LatLng(lat, lng);
-        WidgetHelper.addMarkerWithCircleAndGoTo(mMap, WidgetHelper.setMarkerOptions(ll), ll);
+        MarkerHelper.addMarkerWithCircleAndGoTo(mMap, MarkerHelper.setMarkerOptions(ll), ll);
         Toast.makeText(this, lat + "    " + lng, Toast.LENGTH_LONG).show();
     }
 
@@ -403,7 +403,7 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
             }
 
             //setMarker(somemap, this.res);
-            WidgetHelper.setMarkerFromArrayList(somemap, this.res);
+            MarkerHelper.setMarkerFromArrayList(somemap, this.res);
             setListener(somemap); //pending for refactoring
         }
 

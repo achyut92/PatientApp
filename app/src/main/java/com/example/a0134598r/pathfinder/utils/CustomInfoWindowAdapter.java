@@ -12,7 +12,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.a0134598r.pathfinder.R;
+import com.example.a0134598r.pathfinder.activities.PatientRegistration;
 import com.example.a0134598r.pathfinder.activities.QueueActivity;
+import com.example.a0134598r.pathfinder.dialogs.m_Dialog;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -33,7 +35,9 @@ public class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter, Goo
     Button submitButton;
     Button clearButton;
     Button backButton;
+    Button registerButton;
 
+    String clinicId;
     String clinicName;
     LatLng destination;
 
@@ -89,7 +93,6 @@ public class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter, Goo
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-
 
         final Dialog dialog = new Dialog(activity);
         dialog.setContentView(R.layout.activity_custom_dialog);
@@ -175,6 +178,27 @@ public class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter, Goo
                 dialog.dismiss();
             }
         });
+
+        Button registerButton = (Button) dialog.findViewById(R.id.register_btn);
+        registerButton.setOnClickListener(new View.OnClickListener(){
+
+            /**
+             * Called when a view has been clicked.
+             *
+             * @param v The view that was clicked.
+             */
+            @Override
+            public void onClick(View v) {
+
+                Intent i;
+                i = new Intent(activity.getApplicationContext(), PatientRegistration.class);
+                i.putExtra("clinic_name", clinicName);
+                activity.startActivity(i);
+                dialog.dismiss();
+
+            }
+        });
+
     }
 
     public void setClinicName(String clinicName) {

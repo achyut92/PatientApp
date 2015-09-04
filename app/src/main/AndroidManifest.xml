@@ -95,6 +95,12 @@
             android:label="@string/title_activity_queue" >
         </activity>
 
+        <activity
+            android:name=".activities.PatientRegistration"
+            android:label="PatientRegistration" >
+        </activity>
+
+
         <receiver
             android:name="com.pushbots.google.gcm.GCMBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >

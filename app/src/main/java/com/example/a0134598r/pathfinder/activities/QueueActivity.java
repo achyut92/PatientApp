@@ -16,13 +16,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.a0134598r.pathfinder.R;
+import com.example.a0134598r.pathfinder.System.HttpConstraints;
+import com.example.a0134598r.pathfinder.System.JsonConstraints;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,7 +39,6 @@ public class QueueActivity extends Activity {
 
 
     TextView tvIsConnected;
-    static String result = "";
     TextView queue, doctor;
     Button copy;
 
@@ -68,9 +71,7 @@ public class QueueActivity extends Activity {
 
         new HttpAsyncTask().execute(url+urlFunction);
 
-
     }
-
 
     private void initGUIParam(){
 
@@ -79,7 +80,6 @@ public class QueueActivity extends Activity {
         doctor = (TextView) findViewById(R.id.doctor);
 
         copy = (Button)findViewById(R.id.copy);
-
         clinicName = getIntent().getStringExtra("clinic_name");                           //Get clinic name from FindClinicSpecificLoc Activity, POST Parameter
         finNo = getIntent().getStringExtra("IC_Number");
 
@@ -106,6 +106,8 @@ public class QueueActivity extends Activity {
     private String postRequest(String urls) {
         //StringBuilder sb = new StringBuilder();
 
+        String result = "";
+
         HttpClient client = new DefaultHttpClient();
         //HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000); //Timeout Limit
         org.apache.http.HttpResponse response;
@@ -122,13 +124,25 @@ public class QueueActivity extends Activity {
             post.setEntity(se);
             response =  client.execute(post);
 
+            //String json = EntityUtils.toString(response.getEntity());
+
                     /*Checking response */
-            if (response != null) {
-                in = response.getEntity().getContent();
-                result = convertInputStreamToString(in);
+            if (response.getStatusLine().getStatusCode() == HttpConstraints.HTTP_RESPONSE_200) {
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+
+                    String json_res = EntityUtils.toString(response.getEntity());
+                    JSONObject jObj = new JSONObject(json_res);
+                    if (jObj.has(JsonConstraints.JSON_RESPONSE_ERROR)){
+                        String jsonErrorString = jObj.getString(JsonConstraints.JSON_RESPONSE_ERROR);
+                        return jsonErrorString;
+                    }else {
+                        result = json_res;
+                    }
+                }
                 Log.d("inputStream:", result);
             } else {
-                result = "Did not work!";
+                return HttpConstraints.HTTP_RESPONSE_NOT200;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -169,18 +183,24 @@ public class QueueActivity extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            Toast.makeText(getBaseContext(), "Received", Toast.LENGTH_SHORT).show();
+
+            if (result.equals(JsonConstraints.JSON_RESPONSE_ERROR_TYPE_NO_DOCTOR)) {
+                Toast.makeText(getBaseContext(), "No Doctor available now", Toast.LENGTH_SHORT).show();
+            }else if (result.equals(JsonConstraints.JSON_RESPONSE_ERROR_TYPE_NEED_REGISTER)){
+                Toast.makeText(getBaseContext(), "You need to register first", Toast.LENGTH_SHORT).show();
+            }else{
+                try {
+                    JSONObject jsonObject = new JSONObject(result);
+                    qu = jsonObject.getString("queue_num");
+                    doc = jsonObject.getString("doctor");
+                    queue.setText("Your Queue Number is " + qu);
+                    doctor.setText("Doctor:" + doc);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
             //etResponse.setText(result);
 
-            try {
-                JSONObject jsonObject = new JSONObject(result);
-                qu = jsonObject.getString("queue_num");
-                doc = jsonObject.getString("doctor");
-                queue.setText("Your Queue Number is " + qu);
-                doctor.setText("Doctor:" + doc);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
 
         }
     }

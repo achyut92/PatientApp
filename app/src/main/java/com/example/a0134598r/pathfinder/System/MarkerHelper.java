@@ -19,7 +19,7 @@ import java.util.ArrayList;
 /**
  * Created by jixiang on 1/9/15.
  */
-public class WidgetHelper {
+public class MarkerHelper {
 
 
 
@@ -73,5 +73,7 @@ public class WidgetHelper {
 
         return option;
     }
+
+
 
 }

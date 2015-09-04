@@ -3,8 +3,9 @@
     <string name="title_activity_maps">ClinicLoc</string>
     <string name="action_settings"></string>
 
-    <string name="serverUrl">http://10.10.3.192:5000/</string>
+    <string name="serverUrl">http://10.10.2.233:5000/</string>
     <string name="serverQueue">queue</string>
+    <string name="serverRegistration">registration</string>
 
     <string-array name="regions">
         <item>CENTRAL</item>
