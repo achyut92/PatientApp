@@ -3,7 +3,7 @@
     <string name="title_activity_maps">ClinicLoc</string>
     <string name="action_settings"></string>
 
-    <string name="serverUrl">http://10.10.2.233:5000/</string>
+    <string name="serverUrl">http://172.20.10.5:5000/</string>
     <string name="serverQueue">queue</string>
     <string name="serverRegistration">registration</string>
 
@@ -13,6 +13,18 @@
         <item>NORTH</item>
         <item>NORTHEAST</item>
         <item>WEST</item>
+    </string-array>
+
+    <string name="blood_prompt">Blood Group</string>
+    <string-array name="blood_group">
+        <item>O +</item>
+        <item>O -</item>
+        <item>A +</item>
+        <item>A -</item>
+        <item>B +</item>
+        <item>B -</item>
+        <item>AB +</item>
+        <item>AB -</item>
     </string-array>
 
     <string name="parse_app_id">YOUR_APPLICATION_ID</string>

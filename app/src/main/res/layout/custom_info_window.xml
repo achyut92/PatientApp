@@ -61,34 +61,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="request"
-            android:id="@+id/request_btn"
-            android:layout_gravity="left"
-            android:orientation="horizontal"
-            android:layout_marginTop="0dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginBottom="0dp"
-            android:layout_alignParentRight="true"/>
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="route"
-            android:id="@+id/route_btn"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal"
-            android:layout_marginTop="0dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginBottom="0dp"
-            android:layout_alignParentRight="true"/>
     </LinearLayout>
 
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Click for more options.."
+        android:id="@+id/textView"
+        android:textColor="#ff1415" />
 
 
 </LinearLayout>

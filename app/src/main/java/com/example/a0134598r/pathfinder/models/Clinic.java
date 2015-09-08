@@ -38,7 +38,10 @@ public class Clinic {
         this.ESTATE = ESTATE;
         this.LATITUDE = LATITUDE;
         this.LONGITUDE = LONGITUDE;
+    }
 
+    public Clinic(String CLINIC){
+        this.CLINIC = CLINIC;
     }
 
 

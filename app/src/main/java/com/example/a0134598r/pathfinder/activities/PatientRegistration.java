@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,13 +48,14 @@ public class PatientRegistration extends Activity {
      * Displays text to the user
      */
     //static String result = "";
-    TextView id, name, address1, address2, blood, mobile, ic_num;
+    TextView id, name, address1, address2, mobile, ic_num;
     Button register_btn, cancel_btn;
+    Spinner blood;
 
     /**
      * JSON node names
      */
-    String patientID = null;
+    //String patientID = null;
     String patientName = null;
     String patientAddress1 = null;
     String patientAddress2 = null;
@@ -85,7 +87,7 @@ public class PatientRegistration extends Activity {
          * test
          */
 
-        setPatientAttributes();
+        //setPatientAttributes();
 
         /**
          * Setting Listeners
@@ -102,12 +104,12 @@ public class PatientRegistration extends Activity {
 
     private void initGUI() {
 
-        id = (TextView) findViewById(R.id.patientId);
+        //id = (TextView) findViewById(R.id.patientId);
         name = (TextView) findViewById(R.id.PATIENT_NAME);
         address1 = (TextView) findViewById(R.id.PATIENT_ADDRESS_1);
         address2 = (TextView) findViewById(R.id.PATIENT_ADDRESS_2);
         ic_num = (TextView) findViewById(R.id.reg_ic_num);
-        blood = (TextView) findViewById(R.id.BLOOD_GROUP);
+        blood = (Spinner) findViewById(R.id.BLOOD_GROUP);
         mobile = (TextView) findViewById(R.id.PATIENT_PHONE);
         register_btn = (Button) findViewById(R.id.reg_reg);
         cancel_btn = (Button) findViewById(R.id.reg_cancel);
@@ -121,19 +123,19 @@ public class PatientRegistration extends Activity {
         address1.setText("testaddress_1");
         address2.setText("testaddress_2");
         ic_num.setText("test_ic_num");
-        blood.setText("testblood");
+        //blood.setText("testblood");
         mobile.setText("testmobile");
     }
 
 
     private void getPatientAttributes() {
 
-        patientID = id.getText().toString();
+        //patientID = id.getText().toString();
         patientName = name.getText().toString();
         patientAddress1 = address1.getText().toString();
         patientAddress2 = address2.getText().toString();
         patient_ic_num = ic_num.getText().toString();
-        bloodGroup = blood.getText().toString();
+        bloodGroup = String.valueOf(blood.getSelectedItem());
         patientPhone = mobile.getText().toString();
         uuid = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
@@ -160,18 +162,40 @@ public class PatientRegistration extends Activity {
 
                 //getAttributes
                 getPatientAttributes();
+                if(isEmpty()) {
+                    if ((patient_ic_num.matches("[A-Z][0-9]{8}[A-Z]"))) {
 
-                InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-                /**
-                 * Calling Async Task to post JSON patient
-                 */
-                new HttpAsyncTask().execute(url + url_operation);
+                        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                        /**
+                         * Calling Async Task to post JSON patient
+                         */
+                        new HttpAsyncTask().execute(url + url_operation);
+                        Intent i;
+                        i = new Intent(getApplicationContext(), FindClincSpecificLoc.class);
+                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(i);
+                    } else {
+                        Toast.makeText(getApplication(),"Please enter the correct NRIC/FIN",Toast.LENGTH_SHORT).show();
+                    }
+                }
+                else {
+                    Toast.makeText(getApplication(),"Please Enter all the Details",Toast.LENGTH_SHORT).show();
+                }
 
             }
         };
 
         return oc;
+    }
+
+    private boolean isEmpty() {
+        if(patientName.isEmpty()||patientAddress1.isEmpty()||patientAddress2.isEmpty()||patient_ic_num.isEmpty()||bloodGroup.isEmpty()||
+        patientPhone.isEmpty()){
+            return false;
+        }else{
+            return true;
+        }
     }
 
 
@@ -189,6 +213,7 @@ public class PatientRegistration extends Activity {
 
                 Intent i;
                 i = new Intent(getApplicationContext(), FindClincSpecificLoc.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(i);
             }
         };
@@ -207,7 +232,7 @@ public class PatientRegistration extends Activity {
         //InputStream in = null;
         try {
             HttpPost post = new HttpPost(urls);
-            json.put("patient_id", patientID);
+            //json.put("patient_id", patientID);
             json.put("name", patientName);
             json.put("patient_address_1", patientAddress1);
             json.put("patient_address_2", patientAddress2);
@@ -295,11 +320,11 @@ public class PatientRegistration extends Activity {
             }
             try {
                 JSONObject jsonObject = new JSONObject(result);
-                id.setText("Patient ID:" + jsonObject.getString("patientId"));
+                //id.setText("Patient ID:" + jsonObject.getString("patientId"));
                 name.setText("Name:" + jsonObject.getString("PATIENT_NAME"));
                 address1.setText("Address:" + jsonObject.getString("PATIENT_ADDRESS_1"));
                 address2.setText("Postal Code:" + jsonObject.getString("PATIENT_ADDRESS_2"));
-                blood.setText("Blood Group:" + jsonObject.getString("BLOOD_GROUP"));
+                //blood.setText("Blood Group:" + jsonObject.getString("BLOOD_GROUP"));
                 mobile.setText("Mobile:" + jsonObject.getString("PATIENT_MOBILE"));
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -315,7 +340,7 @@ public class PatientRegistration extends Activity {
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_patient_registration, menu);
+        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 

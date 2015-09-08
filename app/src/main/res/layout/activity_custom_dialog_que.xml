@@ -3,27 +3,28 @@
     android:layout_height="fill_parent"
     android:layout_width="fill_parent"
     android:layout_gravity="fill_horizontal"
-    android:orientation="vertical">
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="registration"
-        android:id="@+id/Label"
-        />
+    android:orientation="vertical"
+    android:background="#B1D4FE">
+
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="#B1D4FE"
+        android:layout_margin="3dp">
         <EditText
             android:layout_height="wrap_content"
             android:id="@+id/fin"
             android:selectAllOnFocus="true"
-            android:lines="1"
-            android:hint="IC/FIN/studentpass/passport"
-            android:inputType="text"
+            android:hint="NRIC/FIN/Passport"
+            android:inputType="textCapCharacters"
             android:layout_width="fill_parent"
             android:layout_gravity="fill_horizontal"
-            android:gravity="fill_horizontal">
+            android:gravity="fill_horizontal"
+            android:textColor="@android:color/holo_green_dark"
+            android:singleLine="true"
+            android:maxLength="10"
+            android:textAllCaps="false">
         </EditText>
     </LinearLayout>
 
@@ -31,7 +32,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:orientation="horizontal"
-        android:layout_width="fill_parent">
+        android:layout_width="fill_parent"
+        android:background="#B1D4FE"
+        android:layout_margin="5dp"
+        android:elevation="10dp">
+
         <Button
             android:layout_height="wrap_content"
             android:gravity="center_vertical|center_horizontal"
@@ -39,7 +44,9 @@
             android:id="@+id/queSubmit"
             android:clickable="true"
             android:layout_width="fill_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="@android:color/holo_green_dark"
+            android:layout_marginRight="5dp">
         </Button>
         <Button
             android:layout_height="wrap_content"
@@ -48,14 +55,18 @@
             android:id="@+id/queClear"
             android:clickable="true"
             android:layout_width="fill_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="@android:color/holo_red_light"
+            android:layout_marginLeft="5dp">
         </Button>
     </LinearLayout>
     <LinearLayout
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:orientation="horizontal"
-        android:layout_width="fill_parent">
+        android:layout_width="fill_parent"
+        android:background="#B1D4FE"
+        android:layout_margin="3dp">
         <Button
             android:layout_height="wrap_content"
             android:gravity="center_vertical|center_horizontal"

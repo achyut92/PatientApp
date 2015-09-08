@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -40,7 +41,7 @@ public class QueueActivity extends Activity {
 
     TextView tvIsConnected;
     TextView queue, doctor;
-    Button copy;
+
 
 
     String clinicName = null;
@@ -79,7 +80,7 @@ public class QueueActivity extends Activity {
         queue = (TextView) findViewById(R.id.qNum);
         doctor = (TextView) findViewById(R.id.doctor);
 
-        copy = (Button)findViewById(R.id.copy);
+
         clinicName = getIntent().getStringExtra("clinic_name");                           //Get clinic name from FindClinicSpecificLoc Activity, POST Parameter
         finNo = getIntent().getStringExtra("IC_Number");
 
@@ -95,12 +96,7 @@ public class QueueActivity extends Activity {
                 getSystemService(Context.CLIPBOARD_SERVICE);
         final ClipData[] clipData = new ClipData[1];
 
-        copy.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clipData[0] = ClipData.newPlainText("Q details",clinicName+"\n");
-            }
-        });
+
     }
 
     private String postRequest(String urls) {
@@ -134,8 +130,12 @@ public class QueueActivity extends Activity {
                     String json_res = EntityUtils.toString(response.getEntity());
                     JSONObject jObj = new JSONObject(json_res);
                     if (jObj.has(JsonConstraints.JSON_RESPONSE_ERROR)){
-                        String jsonErrorString = jObj.getString(JsonConstraints.JSON_RESPONSE_ERROR);
-                        return jsonErrorString;
+                        String json_error = jObj.getString(JsonConstraints.JSON_RESPONSE_ERROR);
+                        if (json_error.equals(JsonConstraints.JSON_RESPONSE_ERROR_TYPE_NO_DOCTOR)) {
+                            result = JsonConstraints.JSON_RESPONSE_ERROR_TYPE_NO_DOCTOR;
+                        }else if (json_error.equals(JsonConstraints.JSON_RESPONSE_ERROR_TYPE_NEED_REGISTER)){
+                            result = JsonConstraints.JSON_RESPONSE_ERROR_TYPE_NEED_REGISTER;
+                        }
                     }else {
                         result = json_res;
                     }
@@ -185,9 +185,15 @@ public class QueueActivity extends Activity {
         protected void onPostExecute(String result) {
 
             if (result.equals(JsonConstraints.JSON_RESPONSE_ERROR_TYPE_NO_DOCTOR)) {
-                Toast.makeText(getBaseContext(), "No Doctor available now", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseContext(), "No Doctor available now", Toast.LENGTH_LONG).show();
+                Intent i = new Intent(QueueActivity.this.getApplicationContext(), FindClincSpecificLoc.class);
+                QueueActivity.this.startActivity(i);
+                QueueActivity.this.finish();
             }else if (result.equals(JsonConstraints.JSON_RESPONSE_ERROR_TYPE_NEED_REGISTER)){
-                Toast.makeText(getBaseContext(), "You need to register first", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseContext(), "You need to register first", Toast.LENGTH_LONG).show();
+                Intent i = new Intent(QueueActivity.this.getApplicationContext(), PatientRegistration.class);
+                QueueActivity.this.startActivity(i);
+                QueueActivity.this.finish();
             }else{
                 try {
                     JSONObject jsonObject = new JSONObject(result);
@@ -200,8 +206,6 @@ public class QueueActivity extends Activity {
                 }
             }
             //etResponse.setText(result);
-
-
         }
     }
 }

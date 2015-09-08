@@ -1,5 +1,7 @@
 package com.example.a0134598r.pathfinder.models;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,6 +15,12 @@ public class Place {
     private String vicinity;
     private Double latitude;
     private Double longitude;
+
+    private LatLng latLng;
+
+    public Place(LatLng latLng) {
+        this.latLng = latLng;
+    }
 
     public String getId() {
         return id;
@@ -62,23 +70,15 @@ public class Place {
         this.vicinity = vicinity;
     }
 
-    public static Place jsonToPontoReferencia(JSONObject pontoReferencia) {
-        try {
-            Place result = new Place();
-            JSONObject geometry = (JSONObject) pontoReferencia.get("geometry");
-            JSONObject location = (JSONObject) geometry.get("location");
-            result.setLatitude((Double) location.get("lat"));
-            result.setLongitude((Double) location.get("lng"));
-            result.setIcon(pontoReferencia.getString("icon"));
-            result.setName(pontoReferencia.getString("name"));
-            result.setVicinity(pontoReferencia.getString("vicinity"));
-            result.setId(pontoReferencia.getString("id"));
-            return result;
-        } catch (JSONException ex) {
 
-        }
-        return null;
+    public LatLng getLatLng() {
+        return latLng;
     }
+
+    public void setLatLng(LatLng latLng) {
+        this.latLng = latLng;
+    }
+
 
     @Override
     public String toString() {

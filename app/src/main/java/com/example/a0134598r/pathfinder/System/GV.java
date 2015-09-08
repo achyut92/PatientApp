@@ -6,6 +6,7 @@ package com.example.a0134598r.pathfinder.System;
 public class GV {
 
 
+    public static final String PROJECT_NUMBER="114034277568";
     public static final String LOG_TAG = "ExampleApp";
     public static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
     public static final String TYPE_AUTOCOMPLETE = "/autocomplete";

@@ -28,7 +28,7 @@ public class CustomDialog extends Activity {
 
         // set values for custom dialog components - text, image and button
 
-        ImageView image = (ImageView) dialog.findViewById(R.id.imageDialog);
+        ImageView image = (ImageView) dialog.findViewById(R.id.card_2);
         image.setImageResource(R.mipmap.ic_launcher);
 
         dialog.show();

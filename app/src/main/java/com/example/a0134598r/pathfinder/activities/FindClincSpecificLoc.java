@@ -14,10 +14,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -32,15 +35,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.a0134598r.pathfinder.R;
 import com.example.a0134598r.pathfinder.System.GV;
 import com.example.a0134598r.pathfinder.System.MarkerHelper;
+import com.example.a0134598r.pathfinder.dialogs.m_Dialog;
 import com.example.a0134598r.pathfinder.models.Clinic;
+import com.example.a0134598r.pathfinder.models.Place;
 import com.example.a0134598r.pathfinder.utils.CustomInfoWindowAdapter;
 import com.example.a0134598r.pathfinder.utils.GPSTracker;
 import com.example.a0134598r.pathfinder.utils.LocationHelper;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -65,6 +72,8 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
     private static final String TYPE_AUTOCOMPLETE = GV.TYPE_AUTOCOMPLETE;
     private static final String OUT_JSON = GV.OUT_JSON;
 
+
+
     private long lastBackPressTime;
     private Toast toast;
     GoogleMap mMap;
@@ -83,15 +92,20 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
 
     ArrayList<Clinic> result;
 
+    public CustomInfoWindowAdapter adapter;
+    public Context applicationContext;
+
     EditText finNumber;
     Button submitButton;
     Button clearButton;
     Button backButton;
 
+    String ic_num;
 
-    HashMap<String, HashMap> extraMarkerInfo = new HashMap<String, HashMap>();
-    HashMap<String, String> data = new HashMap<String, String>();
-    public CustomInfoWindowAdapter adapter;
+
+    public String getClinic_name() {
+        return clinic_name;
+    }
 
     public String clinic_name = null;
 
@@ -148,7 +162,8 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
 
         neighSpin = new ArrayList<String>();
         result = new ArrayList<Clinic>();
-        adapter = new CustomInfoWindowAdapter(this);
+        applicationContext = getApplicationContext();
+        adapter = new CustomInfoWindowAdapter(this,applicationContext);
         address = (AutoCompleteTextView) findViewById(R.id.address);
         address.setText("");
         address.setAdapter(new GooglePlacesAutocompleteAdapter(FindClincSpecificLoc.this, R.layout.list_item));
@@ -183,8 +198,8 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(GV.MAIN_PAGE_LAT, GV.MAIN_PAGE_LNG), GV.MAIN_PAGE_ZOOM));
             mMap.setMyLocationEnabled(true);
-            mMap.setInfoWindowAdapter(adapter);
-            mMap.setOnInfoWindowClickListener(adapter);
+//            mMap.setInfoWindowAdapter(adapter);
+//            mMap.setOnInfoWindowClickListener(adapter);
         }
 
     }
@@ -434,10 +449,12 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
                 //refresh path Builder
                 destination = marker.getPosition();
                 clinic_name = marker.getTitle();
-                adapter.setDestination(destination);
-                adapter.setClinicName(clinic_name);
-//                PathDrawer pd = new PathDrawer(mMap);
-//                pd.pathBuilder(origin,destination);
+
+                //please modify dialogs in package "dialog"
+                Clinic clinic = new Clinic(clinic_name);
+                Place place = new Place(destination);
+                final Dialog dialog = new m_Dialog(FindClincSpecificLoc.this,clinic, place);
+
                 return true;
             }
         });
