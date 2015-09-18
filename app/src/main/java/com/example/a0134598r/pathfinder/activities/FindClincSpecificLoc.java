@@ -7,7 +7,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -17,10 +16,8 @@ import org.json.JSONObject;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -31,23 +28,22 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.a0134598r.pathfinder.R;
 import com.example.a0134598r.pathfinder.System.GV;
 import com.example.a0134598r.pathfinder.System.MarkerHelper;
+import com.example.a0134598r.pathfinder.System.RouteInfoConstraints;
+import com.example.a0134598r.pathfinder.data.DataFormat;
+import com.example.a0134598r.pathfinder.data.HttpHelper;
 import com.example.a0134598r.pathfinder.dialogs.m_Dialog;
 import com.example.a0134598r.pathfinder.models.Clinic;
 import com.example.a0134598r.pathfinder.models.Place;
 import com.example.a0134598r.pathfinder.utils.CustomInfoWindowAdapter;
 import com.example.a0134598r.pathfinder.utils.GPSTracker;
 import com.example.a0134598r.pathfinder.utils.LocationHelper;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -55,12 +51,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.parse.FindCallback;
 import com.parse.ParseAnalytics;
-import com.parse.ParseException;
-import com.parse.ParseGeoPoint;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
 import com.pushbots.push.Pushbots;
 
 //import com.javacodegeeks.androidgoogleplacesautocomplete.R;
@@ -95,12 +86,8 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
     public CustomInfoWindowAdapter adapter;
     public Context applicationContext;
 
-    EditText finNumber;
-    Button submitButton;
-    Button clearButton;
-    Button backButton;
-
-    String ic_num;
+    String url = null;
+    String url_operation = null;
 
 
     public String getClinic_name() {
@@ -108,6 +95,10 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
     }
 
     public String clinic_name = null;
+
+    public Marker YOUMarker;
+
+    public ArrayList<String> imgUrl;
 
     public GoogleMap getmMap() {
         return mMap;
@@ -131,7 +122,8 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
             initializeCurrentLocation();
             setupMapIfNeeded();//refactored
             gotoLocation(latitude, longitude);//refactored
-            getGeoPointFromParse();//rename
+            //getGeoPointFromParse();//rename
+            getGeoPointFromFlask();
         }
 
         address.setOnItemClickListener(setOnItemListeners());
@@ -167,6 +159,11 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
         address = (AutoCompleteTextView) findViewById(R.id.address);
         address.setText("");
         address.setAdapter(new GooglePlacesAutocompleteAdapter(FindClincSpecificLoc.this, R.layout.list_item));
+
+        url = getResources().getString(R.string.serverUrl);
+        url_operation = getResources().getString(R.string.serverQueryByKilometers);
+        YOUMarker = null;
+        imgUrl = new ArrayList<String>();
     }
 
 
@@ -178,7 +175,9 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
 
                 setupMapIfNeeded();//pass
                 refreshLocation();//pass
-                getGeoPointFromParse();//pass
+                //getGeoPointFromParse();//pass
+                gotoLocation(latitude, longitude);//refactored
+                getGeoPointFromFlask();
 
                 InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
@@ -222,7 +221,14 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
     private void gotoLocation(double lat, double lng) {
 
         LatLng ll = new LatLng(lat, lng);
-        MarkerHelper.addMarkerWithCircleAndGoTo(mMap, MarkerHelper.setMarkerOptions(ll), ll);
+        if (null != YOUMarker) {
+            YOUMarker.remove();
+            YOUMarker = null;
+        }
+        mMap.clear();
+        MarkerOptions mo = MarkerHelper.setMarkerOptions(ll);
+        YOUMarker = mMap.addMarker(mo);
+        MarkerHelper.addMarkerWithCircleAndGoTo(mMap,ll);
         Toast.makeText(this, lat + "    " + lng, Toast.LENGTH_LONG).show();
     }
 
@@ -242,11 +248,11 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
         }
 
         origin = new LatLng(latitude, longitude);
-        mMap.addMarker(new MarkerOptions().icon(
-                BitmapDescriptorFactory
-                        .defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                .position(origin).title("YOU"));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(origin, GV.MARKER_ZOOM));
+//        mMap.addMarker(new MarkerOptions().icon(
+//                BitmapDescriptorFactory
+//                        .defaultMarker(BitmapDescriptorFactory.HUE_RED))
+//                .position(origin).title("YOU"));
+//        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(origin, GV.MARKER_ZOOM));
     }
 
 
@@ -359,47 +365,50 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
     }
 
 
-    private void getGeoPointFromParse() {
+//    private void getGeoPointFromParse() {
+//
+//        ParseGeoPoint object = new ParseGeoPoint(latitude, longitude);
+//        ParseQuery<ParseObject> query = ParseQuery.getQuery(GV.CLINIC_DETAIL_TABLE_P);
+//        query.whereWithinKilometers(GV.GEOPOINT, object, GV.PARSE_RADUIUS);
+//        query.findInBackground(new FindCallback<ParseObject>() {
+//
+//            @Override
+//            public void done(List<ParseObject> parseObjects, ParseException e) {
+//
+//                result = new ArrayList<Clinic>();
+//                if (parseObjects.size() >= 1) {
+//                    for (ParseObject po : parseObjects) {
+//                        ParseGeoPoint userLocation = po.getParseGeoPoint(GV.GEOPOINT);
+//                        Clinic clinic = new Clinic(po.getString("CLINIC"), po.getString("ADDRESS_1"), po.getString("ESTATE"), userLocation.getLatitude(),
+//                                userLocation.getLongitude());
+//                        result.add(clinic);
+//                    }
+//                    new GetPlaces(FindClincSpecificLoc.this, result).execute();
+//                    //theId = objects.get(0).getObjectId();
+//                } else {
+//                    Toast.makeText(getApplicationContext(), GV.ERROR_CLINIC_UNFOUND, Toast.LENGTH_LONG).show();
+//                }
+//            }
+//        });
+//
+//    }
 
-        ParseGeoPoint object = new ParseGeoPoint(latitude, longitude);
-        ParseQuery<ParseObject> query = ParseQuery.getQuery(GV.CLINIC_DETAIL_TABLE_P);
-        query.whereWithinKilometers(GV.GEOPOINT, object, GV.PARSE_RADUIUS);
-        query.findInBackground(new FindCallback<ParseObject>() {
+    private void getGeoPointFromFlask(){
 
-            @Override
-            public void done(List<ParseObject> parseObjects, ParseException e) {
-
-                result = new ArrayList<Clinic>();
-                if (parseObjects.size() >= 1) {
-                    for (ParseObject po : parseObjects) {
-                        ParseGeoPoint userLocation = po.getParseGeoPoint(GV.GEOPOINT);
-                        Clinic clinic = new Clinic(po.getString("CLINIC"), po.getString("ADDRESS_1"), po.getString("ESTATE"), userLocation.getLatitude(),
-                                userLocation.getLongitude());
-
-                        result.add(clinic);
-
-                    }
-                    new GetPlaces(FindClincSpecificLoc.this, result).execute();
-                    //theId = objects.get(0).getObjectId();
-                } else {
-                    Toast.makeText(getApplicationContext(), GV.ERROR_CLINIC_UNFOUND, Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
+        String str_Lat = DataFormat.doubletoString(latitude);
+        String str_lng = DataFormat.doubletoString(longitude);
+        new GetPlaces(FindClincSpecificLoc.this).execute(url, url_operation, str_Lat,str_lng);
     }
 
 
-    private class GetPlaces extends AsyncTask<Void, Void, ArrayList<Clinic>> {
+    private class GetPlaces extends AsyncTask<String, Void, ArrayList<Clinic>> {
 
         private ProgressDialog dialog;
         private Context context;
         private String places;
-        private ArrayList<Clinic> res;
 
-        public GetPlaces(Context context, ArrayList<Clinic> res) {
+        public GetPlaces(Context context) {
             this.context = context;
-            this.res = res;
         }
 
 
@@ -418,7 +427,7 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
             }
 
             //setMarker(somemap, this.res);
-            MarkerHelper.setMarkerFromArrayList(somemap, this.res);
+            MarkerHelper.setMarkerFromArrayList(somemap, result);
             setListener(somemap); //pending for refactoring
         }
 
@@ -432,9 +441,23 @@ public class FindClincSpecificLoc extends ActionBarActivity implements OnItemCli
             dialog.show();
         }
 
+//        @Override
+//        protected ArrayList<Clinic> doInBackground(Void... arg0) {
+//            return this.res;
+//        }
+
         @Override
-        protected ArrayList<Clinic> doInBackground(Void... arg0) {
-            return this.res;
+        protected ArrayList<Clinic> doInBackground(String... param) {
+
+            //this.res = HttpHelper.jreadAllClinicList(param[0] + param[1]);
+
+            String url = param[0]+param[1];
+            String src_lat = param[2];
+            String src_lng = param[3];
+            String kilo = RouteInfoConstraints.KILO;
+
+            ArrayList<Clinic> res = HttpHelper.jreadClinicListByKilo(url,src_lat,src_lng,kilo);
+            return res;
         }
 
     }

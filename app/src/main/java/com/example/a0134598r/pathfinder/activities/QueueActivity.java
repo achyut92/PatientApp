@@ -52,6 +52,8 @@ public class QueueActivity extends Activity {
 
     String url =null;
     String urlFunction =null;
+    String reg_id = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +85,7 @@ public class QueueActivity extends Activity {
 
         clinicName = getIntent().getStringExtra("clinic_name");                           //Get clinic name from FindClinicSpecificLoc Activity, POST Parameter
         finNo = getIntent().getStringExtra("IC_Number");
+        reg_id = getIntent().getStringExtra("reg_id");
 
         uuid = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID); //POST Parameter
         url = getResources().getString(R.string.serverUrl);
@@ -115,6 +118,7 @@ public class QueueActivity extends Activity {
             json.put("clinic_name", clinicName);
             json.put("uuid", uuid);
             json.put("fin_no",finNo);
+            json.put("reg_id",reg_id);
             StringEntity se = new StringEntity(json.toString());
             se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
             post.setEntity(se);
@@ -192,6 +196,7 @@ public class QueueActivity extends Activity {
             }else if (result.equals(JsonConstraints.JSON_RESPONSE_ERROR_TYPE_NEED_REGISTER)){
                 Toast.makeText(getBaseContext(), "You need to register first", Toast.LENGTH_LONG).show();
                 Intent i = new Intent(QueueActivity.this.getApplicationContext(), PatientRegistration.class);
+                i.putExtra("clinic_name",clinicName);
                 QueueActivity.this.startActivity(i);
                 QueueActivity.this.finish();
             }else{

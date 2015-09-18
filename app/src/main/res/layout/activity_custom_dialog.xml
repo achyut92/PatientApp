@@ -1,87 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="500px"
     android:background="#B1D4FE">
 
     <LinearLayout
-        android:id="@+id/imageLayout"
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:gravity="center_horizontal">
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <ImageView
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/card_1"
-            android:layout_margin="2dp" />
+            android:id="@+id/imageLayout1">
 
-        <ImageView
-            android:id="@+id/card_2"
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/card_1"
+                android:layout_margin="2dp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/card_2"
+                android:layout_margin="2dp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/card_3"
+                android:layout_margin="2dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/imageLayout2"
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dp" />
+            android:layout_margin="3dp"
+            android:gravity="center_horizontal">
 
-        <ImageView
-            android:layout_width="wrap_content"
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/card_4"
+                android:layout_margin="2dp" />
+
+            <ImageView
+                android:id="@+id/card_5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/card_6"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_margin="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/card_3"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_margin="2dp" />
+            android:layout_below="@+id/imageLayout"
+            android:id="@+id/linearLayout2"
+            android:layout_centerInParent="true"
+            android:layout_margin="10dp"
+            android:gravity="center">
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/card_4"
-            android:layout_above="@+id/linearLayout2"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="2dp" />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Queue"
+                android:id="@+id/request_btn"
+                android:layout_marginTop="5dp"
+                android:layout_toRightOf="@+id/card_2"
+                android:background="@drawable/square"
+                android:textStyle="bold"
+                android:textColor="#ff2c25" />
 
-    </LinearLayout>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Register"
+                android:id="@+id/register_btn"
+                android:layout_alignTop="@+id/request_btn"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/square"
+                android:textStyle="bold"
+                android:textColor="#ff2c25" />
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/imageLayout"
-        android:id="@+id/linearLayout2"
-        android:layout_centerInParent="true"
-        android:layout_margin="10dp">
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Queue"
-            android:id="@+id/request_btn"
-            android:layout_marginTop="5dp"
-            android:layout_toRightOf="@+id/card_2"
-            android:background="#fbff59" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Register"
-            android:id="@+id/register_btn"
-            android:layout_alignTop="@+id/request_btn"
-            android:layout_centerHorizontal="true"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="5dp"
-            android:background="@android:color/holo_green_dark" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:text="Direction"
-            android:id="@+id/route_btn"
-            android:layout_alignTop="@+id/request_btn"
-            android:layout_centerHorizontal="true"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="5dp"
-            android:background="@android:color/holo_orange_dark" />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:text="Direction"
+                android:id="@+id/route_btn"
+                android:layout_alignTop="@+id/request_btn"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/square"
+                android:textStyle="bold"
+                android:textColor="#ff2c25" />
+        </LinearLayout>
     </LinearLayout>
 
 </RelativeLayout>

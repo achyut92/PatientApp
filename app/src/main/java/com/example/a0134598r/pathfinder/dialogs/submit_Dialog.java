@@ -3,6 +3,7 @@ package com.example.a0134598r.pathfinder.dialogs;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -32,6 +33,9 @@ public class submit_Dialog extends Dialog {
 
     String ic_num;
 
+    GoogleCloudMessaging gcm = null;
+    String clinic_name = null;
+
     /**
      * Create a Dialog window that uses the default dialog frame style.
      *
@@ -50,44 +54,20 @@ public class submit_Dialog extends Dialog {
         clearButton = (Button)findViewById(R.id.queClear);
         backButton = (Button) findViewById(R.id.queBack);
 
+        clinic_name = clinic.getCLINIC();
 
         this.setTitle("Request for Queue Number");
         //Create touch listeners for all buttons.
         submitButton.setOnClickListener(new View.OnClickListener() {
 
-            Intent i;
-
             @Override
             public void onClick(View v) {
                 ic_num = finNumber.getText().toString();
-                GoogleCloudMessaging gcm = null;
-                String regid = "";
-                String projectNumber = GV.PROJECT_NUMBER;
-                i = new Intent(context.getApplicationContext(), QueueActivity.class);
                 if (ic_num.isEmpty()) {
                     Toast.makeText(context.getApplicationContext(), "Please fill in your correct IC Number!!!", Toast.LENGTH_SHORT).show();
-                } else if (ic_num.matches("[A-Z][0-9]{8}[A-Z]")) {
+                } else if (ic_num.matches("[A-Z][0-9]{7}[A-Z]")) {
 
-                    String msg = "";
-                    try {
-                        if (gcm == null) {
-                            gcm = GoogleCloudMessaging.getInstance(context.getApplicationContext());
-                        }
-                        regid = gcm.register(projectNumber);
-                        msg = "Device registered, registration ID=" + regid;
-                        Log.i("GCM", msg);
-
-                    } catch (IOException ex) {
-                        msg = "Error :" + ex.getMessage();
-                    }
-
-                    i.putExtra("reg_id", regid);
-
-
-                    i.putExtra("clinic_name", clinic.getCLINIC());
-                    i.putExtra("IC_Number", ic_num);
-                    context.startActivity(i);
-
+                    registerWithGCM();
                     submit_Dialog.this.dismiss();
                 } else {
                     Toast.makeText(context.getApplicationContext(), "Please enter the correct NRIC/FIN", Toast.LENGTH_SHORT).show();
@@ -115,4 +95,63 @@ public class submit_Dialog extends Dialog {
         submit_Dialog.this.show();
         dialog1.dismiss();
      }
+
+    public void registerWithGCM(){
+
+        new AsyncTask<Void, Void, String>() {
+            /**
+             * Override this method to perform a computation on a background thread. The
+             * specified parameters are the parameters passed to {@link #execute}
+             * by the caller of this task.
+             * <p/>
+             * This method can call {@link #publishProgress} to publish updates
+             * on the UI thread.
+             *
+             * @param params The parameters of the task.
+             * @return A result, defined by the subclass of this task.
+             * @see #onPreExecute()
+             * @see #onPostExecute
+             * @see #publishProgress
+             */
+            @Override
+            protected String doInBackground(Void... params) {
+                String msg = "";
+                try {
+                    if (gcm == null) {
+                        gcm = GoogleCloudMessaging.getInstance(getContext().getApplicationContext());
+                    }
+                    msg = gcm.register(GV.PROJECT_NUMBER);
+                    Log.i("GCM", msg);
+
+                } catch (IOException ex) {
+                    msg = "Error :" + ex.getMessage();
+                }
+
+                return msg;
+
+            }
+
+            /**
+             * <p>Runs on the UI thread after {@link #doInBackground}. The
+             * specified result is the value returned by {@link #doInBackground}.</p>
+             * <p/>
+             * <p>This method won't be invoked if the task was cancelled.</p>
+             *
+             * @param msg The result of the operation computed by {@link #doInBackground}.
+             * @see #onPreExecute
+             * @see #doInBackground
+             * @see #onCancelled(Object)
+             */
+            @Override
+            protected void onPostExecute(String msg) {
+                super.onPostExecute(msg);
+                Intent i = new Intent(getContext(), QueueActivity.class);
+                i.putExtra("reg_id", msg);
+                i.putExtra("clinic_name",clinic_name);
+                i.putExtra("IC_Number", ic_num);
+                getContext().startActivity(i);
+            }
+        }.execute();
+
+    }
 }

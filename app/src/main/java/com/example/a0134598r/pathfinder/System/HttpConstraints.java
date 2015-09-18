@@ -12,6 +12,13 @@ public class HttpConstraints {
     public static final String HTTP_REQUEST_DUPLICATED="0";
     public static final String HTTP_REQUEST_NOTEXPECTED = "00";
 
+    public static final int TIME_OUT = 5000;
+    public static final int ASYNTASK_TIME_OUT=10000;
+
+    public static final String HTTP_GET_SRC_LAT = "src_lat";
+    public static final String HTTP_GET_SRC_LNG = "src_lng";
+    public static final String HTTP_GET_KILO = "kilo";
+
 
 
 }

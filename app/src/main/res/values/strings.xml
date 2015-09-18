@@ -1,11 +1,14 @@
 <resources>
-    <string name="app_name">PathFinder</string>
-    <string name="title_activity_maps">ClinicLoc</string>
+    <string name="app_name">MyQre</string>
+    <string name="title_activity_maps">MyQre</string>
     <string name="action_settings"></string>
 
-    <string name="serverUrl">http://172.20.10.5:5000/</string>
+    <string name="serverUrl">http://10.10.6.99:5000/</string><!--https://ljx-flask-res-server.herokuapp.com/-->
     <string name="serverQueue">queue</string>
     <string name="serverRegistration">registration</string>
+    <string name="serverQueryAll">queryall</string>
+    <string name="serverQueryByKilometers">querybykilo</string>
+    <string name="serverInsuranceUrl">insurance_url</string>
 
     <string-array name="regions">
         <item>CENTRAL</item>
@@ -43,4 +46,5 @@
     <string name="title_activity_custom_dialog">CustomDialog</string>
     <string name="title_activity_custom_dialog_que">CustomDialogQue</string>
     <string name="title_activity_queue">QueueActivity</string>
+    <string name="title_activity_notify_message">NotifyMessage</string>
 </resources>

@@ -24,6 +24,7 @@ public class MarkerHelper {
 
 
     public static void setMarkerFromArrayList(GoogleMap mMap,ArrayList<Clinic>result){
+        //mMap.clear();
         for (int i = 0; i < result.size(); i++) {
             LatLng PERTH = new LatLng(result.get(i).getLATITUDE(), result
                     .get(i).getLONGITUDE());
@@ -50,11 +51,12 @@ public class MarkerHelper {
 
     }
 
-    public static void addMarkerWithCircleAndGoTo(GoogleMap mMap, MarkerOptions option, LatLng ll) {
+    public static void addMarkerWithCircleAndGoTo(GoogleMap mMap, LatLng ll) {
 
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, GV.MARKER_ZOOM);
 
-        mMap.addMarker(option);
+
+//        mMap.addMarker(option);
         //mMap.addMarker(new MarkerOptions().position(ll).title("This is a marker"));
         mMap.animateCamera(update);
 
@@ -70,6 +72,8 @@ public class MarkerHelper {
         MarkerOptions option = new MarkerOptions();
         option.position(ll);
         option.title("YOU");
+        option.icon(BitmapDescriptorFactory
+                .defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
         return option;
     }
